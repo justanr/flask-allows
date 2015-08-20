@@ -11,8 +11,8 @@ at your line count all the time? Think there's no answer? There is! Flask-Allows
 
 
 Flask-Allows is an authorization tool for Flask inspired by
-`django-rest-framework <https://github.com/tomchristie/django-rest-framework>`'s 
-permissioning system and `rest_condition <https://github.com/caxap/rest_condition>`'s
+`django-rest-framework <https://github.com/tomchristie/django-rest-framework>`_'s
+permissioning system and `rest_condition <https://github.com/caxap/rest_condition>`_'s
 ability to compose simple requirements into more complex ones.
 
 Install
