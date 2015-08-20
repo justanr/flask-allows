@@ -1,0 +1,7 @@
+[report]
+exclude_lines = 
+    def __repr__
+    if __name__ == .__main__.:
+    return NotImplemented
+    raise NotImplementedError
+    pragma: no cover
