@@ -11,6 +11,12 @@ Flask-Allows is an authorization tool for Flask inspired by
 permissioning system and `rest_condition <https://github.com/caxap/rest_condition>`'s
 ability to compose simple requirements into more complex ones.
 
+Install
+-------
+
+Just yer standard `pip install flask-allows`
+
+
 Quickstart
 ----------
 
