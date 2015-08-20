@@ -1,3 +1,7 @@
+.. image:: https://travis-ci.org/justanr/flask-allows.svg?branch=master
+    :target: https://travis-ci.org/justanr/flask-allows
+
+
 flask-allows
 ============
 
