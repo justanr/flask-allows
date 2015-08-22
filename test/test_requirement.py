@@ -23,11 +23,6 @@ def test_ConditionalRequirement_defaults(always):
         ((always,), operator.and_, None, None)
 
 
-def test_Conditional_shortcut_names():
-    assert (C, And, Or, Not) == (ConditionalRequirement, ConditionalRequirement.And,
-                                 ConditionalRequirement.Or, ConditionalRequirement.Not)
-
-
 def test_empty_Conditional_is_False(member, request):
     Cond = ConditionalRequirement()
     assert not Cond(member, request)
