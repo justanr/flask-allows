@@ -1,7 +1,7 @@
 from functools import wraps
 from flask import request, current_app
 from werkzeug.exceptions import Forbidden
-
+from werkzeug import LocalProxy
 
 class Allows(object):
     """Allows gives you the ability to impose identity requirements on routes
@@ -111,9 +111,11 @@ class Allows(object):
         return all(r(identity, request) for r in requirements)
 
 
-def _get_allows():
+def __get_allows():
     "Internal helper"
     try:
         return current_app.extensions['allows']
     except (AttributeError, KeyError):
         raise RuntimeError("Flask-Allows not configured against current app")
+
+_allows = LocalProxy(__get_allows, name="flask-allows")
