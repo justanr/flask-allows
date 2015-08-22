@@ -1,11 +1,11 @@
 language: python
 python: 3.4
 env:
-    -TOX_ENV=3.4
-    -TOX_ENV=3.3
-    -TOX_ENV=2.7
-    -TOX_ENV=2.6
-    -TOX_ENV=pypy
+    - TOX_ENV=3.4
+    - TOX_ENV=3.3
+    - TOX_ENV=2.7
+    - TOX_ENV=2.6
+    - TOX_ENV=pypy
 install: 
     - pip install tox
 script:
