@@ -14,7 +14,7 @@ def test_Permission_init(app, ismember):
 
 
 def test_Permission_provide_ident(app, member, ismember):
-    allows = Allows(app=app)
+    Allows(app=app)
 
     with app.app_context():
         p = Permission(ismember, identity=member)
@@ -23,7 +23,7 @@ def test_Permission_provide_ident(app, member, ismember):
 
 
 def test_Permission_provide_exception(app, member, ismember):
-    allows = Allows(app=app)
+    Allows(app=app)
 
     class MyForbid(Forbidden):
         pass
@@ -34,9 +34,8 @@ def test_Permission_provide_exception(app, member, ismember):
     assert isinstance(p.throws, MyForbid) and p.throws.description == "Nope"
 
 
-
 def test_Permission_as_bool(app, member, always):
-    allows = Allows(app=app, identity_loader=lambda: member)
+    Allows(app=app, identity_loader=lambda: member)
 
     with app.app_context():
         p = Permission(always)
@@ -45,7 +44,7 @@ def test_Permission_as_bool(app, member, always):
 
 
 def test_Permission_bool_doesnt_raise(app, member, never):
-    allows = Allows(app=app, identity_loader=lambda: member)
+    Allows(app=app, identity_loader=lambda: member)
 
     with app.app_context():
         p = Permission(never)
@@ -53,9 +52,8 @@ def test_Permission_bool_doesnt_raise(app, member, never):
     assert not p and never.called_with['user'] is member
 
 
-
 def test_Permission_allowed_context(app, member, always):
-    allows = Allows(app=app, identity_loader=lambda: member)
+    Allows(app=app, identity_loader=lambda: member)
 
     allowed = False
 
@@ -69,7 +67,7 @@ def test_Permission_allowed_context(app, member, always):
 
 
 def test_Permission_forbidden_context(app, member, never):
-    allows = Allows(app=app, identity_loader=lambda: member)
+    Allows(app=app, identity_loader=lambda: member)
 
     with app.app_context():
         p = Permission(never)
