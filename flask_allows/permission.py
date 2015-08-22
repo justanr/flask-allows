@@ -1,4 +1,4 @@
-from .allows import _get_allows
+from .allows import _allows
 
 
 class Permission(object):
@@ -43,7 +43,7 @@ class Permission(object):
             add_admin_stuff_to_response()
     """
     def __init__(self, *requirements, **opts):
-        self.ext = _get_allows()
+        self.ext = _allows._get_current_object()
         self.requirements = requirements
         self.throws = opts.get('throws', self.ext.throws)
         self.identity = opts.get('identity')

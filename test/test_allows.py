@@ -1,37 +1,6 @@
 import pytest
 from flask_allows import Allows
-from flask_allows.allows import _get_allows
 from werkzeug.exceptions import Forbidden
-
-
-def test_get_allows_raises_runtime(app):
-    with app.app_context():
-        with pytest.raises(RuntimeError) as excinfo:
-            _get_allows()
-
-    assert "Flask-Allows not configured against current app" == str(excinfo.value)
-
-
-def test_get_allows(app):
-    allows = Allows(app)
-
-    with app.app_context():
-        got = _get_allows()
-
-    assert allows is got
-
-
-def test_get_allows_retrieves_subclass(app):
-    class SubAllows(Allows):
-        pass
-
-    allows = SubAllows(app)
-
-    with app.app_context():
-        got = _get_allows()
-
-    assert got is allows
-
 
 def test_Allows_defaults():
     allows = Allows()
