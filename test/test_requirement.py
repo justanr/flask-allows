@@ -3,7 +3,6 @@ from flask_allows import Requirement, ConditionalRequirement, And, Or, Not, C
 import operator
 
 
-
 def test_cant_create_Requirement():
     with pytest.raises(TypeError) as excinfo:
         Requirement()

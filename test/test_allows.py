@@ -2,6 +2,7 @@ import pytest
 from flask_allows import Allows
 from werkzeug.exceptions import Forbidden
 
+
 def test_Allows_defaults():
     allows = Allows()
     assert allows._identity_loader is None and allows.throws is Forbidden
@@ -21,7 +22,7 @@ def test_Allows_init_app(app):
 
 
 def test_Allows_identity_loader_on_init(member):
-    ident = lambda: member
+    ident = lambda: member  # noqa
     allows = Allows(identity_loader=ident)
     assert allows._identity_loader is ident
 

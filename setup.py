@@ -1,18 +1,6 @@
-from setuptools import setup
 from setuptools.command.test import test as TestCommand
+from setuptools import setup, find_packages
 import sys
-import re
-import ast
-
-
-def _get_version():
-    version_re = re.compile(r'__version__\s+=\s+(.*)')
-
-    with open('flask_allows/__init__.py', 'rb') as fh:
-        version = ast.literal_eval(
-            version_re.search(fh.read().decode('utf-8')).group(1))
-
-    return str(version)
 
 
 class ToxTest(TestCommand):
@@ -41,12 +29,13 @@ class ToxTest(TestCommand):
 if __name__ == "__main__":
     setup(
         name='flask-allows',
-        version=_get_version(),
+        version='0.2.0',
         author='Alec Nikolas Reiter',
         author_email='alecreiter@gmail.com',
         description='Impose authorization requirements on Flask routes',
         license='MIT',
-        packages=['flask_allows'],
+        packages=find_packages('src'),
+        package_dir={'': 'src'},
         zip_safe=False,
         url="https://github.com/justanr/flask-allows",
         keywords=['flask', 'authorization'],
@@ -57,7 +46,10 @@ if __name__ == "__main__":
             'Intended Audience :: Developers',
             'License :: OSI Approved :: MIT License',
             'Programming Language :: Python :: 2.7',
-            'Programming Language :: Python :: 3.4'
+            'Programming Language :: Python :: 3.3',
+            'Programming Language :: Python :: 3.4',
+            'Programming Language :: Python :: 3.5',
+            'Programming Language :: Python :: 3.6'
         ],
         install_requires=['Flask'],
         test_suite='test',

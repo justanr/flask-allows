@@ -119,7 +119,7 @@ def isauthed(authlevels):
 
 @pytest.fixture(scope='session')
 def ismember(authlevels):
-    return lambda u,r: u.permlevel >= authlevels.member
+    return lambda u, r: u.permlevel >= authlevels.member
 
 
 @pytest.fixture(scope='session')

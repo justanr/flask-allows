@@ -1,7 +1,31 @@
+[run]
+branch = true
+source = flask_allows
+omit =
+        __meta__.py
+parallel = true
+
+[paths]
+source =
+   src/flask_allows/
+   .tox/*/lib/*/site-packages/flask_allows/
+
 [report]
-exclude_lines = 
-    def __repr__
-    if __name__ == .__main__.:
-    return NotImplemented
-    raise NotImplementedError
+exclude_lines =
     pragma: no cover
+    def __repr__
+    if self\.debug:
+    if settings.DEBUG
+    raise NotImplementedError
+    if 0:
+    if False:
+    if __name__ == .__main__.:
+    @abstractmethod
+
+fail_under = 80
+precision = 2
+show_missing = true
+skip_covered = true
+
+[html]
+directory = tests/htmlcov

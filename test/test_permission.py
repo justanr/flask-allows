@@ -9,8 +9,12 @@ def test_Permission_init(app, ismember):
     with app.app_context():
         p = Permission(ismember)
 
-    assert (p.ext is allows and p.requirements == (ismember,)
-            and p.throws is Forbidden and p.identity is None)
+    assert (
+        p.ext is allows and
+        p.requirements == (ismember,) and
+        p.throws is Forbidden and
+        p.identity is None
+    )
 
 
 def test_Permission_provide_ident(app, member, ismember):
