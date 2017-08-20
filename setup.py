@@ -29,7 +29,7 @@ class ToxTest(TestCommand):
 if __name__ == "__main__":
     setup(
         name='flask-allows',
-        version='0.2.0',
+        version='0.3.0',
         author='Alec Nikolas Reiter',
         author_email='alecreiter@gmail.com',
         description='Impose authorization requirements on Flask routes',
@@ -46,7 +46,6 @@ if __name__ == "__main__":
             'Intended Audience :: Developers',
             'License :: OSI Approved :: MIT License',
             'Programming Language :: Python :: 2.7',
-            'Programming Language :: Python :: 3.3',
             'Programming Language :: Python :: 3.4',
             'Programming Language :: Python :: 3.5',
             'Programming Language :: Python :: 3.6'
