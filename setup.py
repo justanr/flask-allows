@@ -26,6 +26,13 @@ class ToxTest(TestCommand):
         sys.exit(errno)
 
 
+with open('README.rst', 'r', encoding='utf-8') as f:
+    readme = f.read()
+
+with open('CHANGELOG', 'r', encoding='utf-8') as f:
+    changelog = f.read()
+
+
 if __name__ == "__main__":
     setup(
         name='flask-allows',
@@ -33,9 +40,12 @@ if __name__ == "__main__":
         author='Alec Nikolas Reiter',
         author_email='alecreiter@gmail.com',
         description='Impose authorization requirements on Flask routes',
+        long_description=readme + '\n\n' + changelog,
         license='MIT',
         packages=find_packages('src'),
         package_dir={'': 'src'},
+        package_data={'': ['LICENSE', 'NOTICE']},
+        include_package_data=True,
         zip_safe=False,
         url="https://github.com/justanr/flask-allows",
         keywords=['flask', 'authorization'],
