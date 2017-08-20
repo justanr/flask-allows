@@ -20,6 +20,8 @@ Install
 
 Just yer standard `pip install flask-allows`
 
+Flask Allows supports 2.7, and 3.4+. Support for 3.3 was ended in the version 0.3 release
+
 
 Quickstart
 ----------
@@ -108,7 +110,7 @@ One of these is the base `Requirement` class:
             else:
                 return [gr.id for gr in user.groups]
 
-When providing a class based requirement to be fulfilled, you must 
+When providing a class based requirement to be fulfilled, you must
 instantiate it in case there's any setup that needs to be performed.
 
 .. code:: Python

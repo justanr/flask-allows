@@ -1,4 +1,5 @@
 Version 0.3
 ===========
 
+* Drop official support for Python 3.3
 * Deprecate implicit decoration on class based views via the requirements attribute
