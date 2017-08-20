@@ -26,17 +26,17 @@ class ToxTest(TestCommand):
         sys.exit(errno)
 
 
-with open('README.rst', 'r', encoding='utf-8') as f:
+with open('README.rst', 'r') as f:
     readme = f.read()
 
-with open('CHANGELOG', 'r', encoding='utf-8') as f:
+with open('CHANGELOG', 'r') as f:
     changelog = f.read()
 
 
 if __name__ == "__main__":
     setup(
         name='flask-allows',
-        version='0.3.0',
+        version='0.3.1',
         author='Alec Nikolas Reiter',
         author_email='alecreiter@gmail.com',
         description='Impose authorization requirements on Flask routes',
