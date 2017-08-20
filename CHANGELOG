@@ -1,0 +1,4 @@
+Version 0.3
+===========
+
+* Deprecate implicit decoration on class based views via the requirements attribute

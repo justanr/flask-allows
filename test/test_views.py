@@ -1,6 +1,8 @@
 from flask_allows import Allows, requires, PermissionedView
+from flask.views import View, MethodView
 from werkzeug.exceptions import Forbidden
 import pytest
+import warnings
 
 
 def test_requires_allows(app, member, ismember):
@@ -56,3 +58,41 @@ def test_PermissionedView_fails(app, ismember, guest):
     with pytest.raises(Forbidden):
         with app.app_context():
             IsMemberView.as_view('memberonly')()
+
+
+def test_View_requirements_is_depercated(ismember):
+    class SomeView(PermissionedView):
+        requirements = [ismember]
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always', DeprecationWarning)
+        SomeView.as_view('some_view')
+        warnings.simplefilter('default', DeprecationWarning)
+
+        assert len(w) == 1
+        assert issubclass(w[0].category, DeprecationWarning)
+        assert "Implicit decoration" in str(w[0].message)
+
+
+def test_requires_works_as_cbv_decorator(app, ismember, guest):
+    class IsMemberView(View):
+        decorators = [requires(ismember)]
+
+    Allows(app=app, identity_loader=lambda: guest)
+
+    with pytest.raises(Forbidden):
+        with app.app_context():
+            IsMemberView.as_view('memberonly')()
+
+
+def test_requires_works_as_method_decorator(app, ismember, guest):
+    class MembersCanPost(MethodView):
+        @requires(ismember)
+        def post(self):
+            return 'hello'
+
+    Allows(app=app, identity_loader=lambda: guest)
+    context = app.test_request_context('/', method='POST')
+
+    with pytest.raises(Forbidden), app.app_context(), context:
+        MembersCanPost.as_view('memberonly')()
