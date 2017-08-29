@@ -71,7 +71,7 @@ def test_View_requirements_is_depercated(ismember):
 
         assert len(w) == 1
         assert issubclass(w[0].category, DeprecationWarning)
-        assert "Implicit decoration" in str(w[0].message)
+        assert "PermissionedView is deprecated" in str(w[0].message)
 
 
 def test_requires_works_as_cbv_decorator(app, ismember, guest):
