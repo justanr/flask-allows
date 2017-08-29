@@ -1,5 +1,12 @@
-Version 3.1 (2017-08-20)
+Version 0.4 (Unreleased)
 ========================
+
+* Clarify deprecation message for PermissionedView, will be removed in 0.6
+* Deprecate Permission.throw_type for 0.6 removak
+
+
+Version 0.3. (2017-08-20)
+=========================
 
 * Fix error that prevent sdist builds on 2.7
 
