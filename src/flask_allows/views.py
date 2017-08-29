@@ -13,7 +13,12 @@ def requires(*requirements, **opts):
 
     def fail(*args, **kwargs):
         f = _make_callable(opts.get('on_fail', _allows.on_fail))
-        return f(*args, **kwargs) or raiser()
+        res = f(*args, **kwargs)
+
+        if res is not None:
+            return res
+
+        raiser()
 
     def decorator(f):
 

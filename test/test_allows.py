@@ -128,3 +128,14 @@ def test_allows_on_fail_override_at_decoration(member, atleastmod):
         pass
 
     assert stub() == "Overridden failure"
+
+
+def test_allows_on_fail_returning_none_raises(member, atleastmod):
+    allows = Allows(on_fail=lambda *a, **k: None, identity_loader=lambda: member)
+
+    @allows.requires(atleastmod)
+    def stub():
+        pass
+
+    with pytest.raises(Forbidden):
+        stub()

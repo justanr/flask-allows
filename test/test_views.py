@@ -118,3 +118,14 @@ def test_requires_defaults_to_allows_override(app, ismember, guest):
 
     with app.app_context():
         assert stub() == "I've failed"
+
+
+def test_requires_on_fail_returning_none_raises(app, ismember, guest):
+    @requires(ismember)
+    def stub():
+        pass
+
+    Allows(app=app, on_fail=lambda *a, **k: None, identity_loader=lambda: guest)
+
+    with pytest.raises(Forbidden), app.app_context():
+        stub()
