@@ -28,4 +28,4 @@ show_missing = true
 skip_covered = true
 
 [html]
-directory = tests/htmlcov
+directory = test/htmlcov
