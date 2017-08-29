@@ -36,7 +36,7 @@ with open('CHANGELOG', 'r') as f:
 if __name__ == "__main__":
     setup(
         name='flask-allows',
-        version='0.3.1',
+        version='0.4',
         author='Alec Nikolas Reiter',
         author_email='alecreiter@gmail.com',
         description='Impose authorization requirements on Flask routes',
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         license='MIT',
         packages=find_packages('src'),
         package_dir={'': 'src'},
-        package_data={'': ['LICENSE', 'NOTICE']},
+        package_data={'': ['LICENSE', 'NOTICE', 'README.rst', 'CHANGELOG']},
         include_package_data=True,
         zip_safe=False,
         url="https://github.com/justanr/flask-allows",
