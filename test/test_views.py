@@ -71,7 +71,7 @@ def test_View_requirements_is_depercated(ismember):
 
         assert len(w) == 1
         assert issubclass(w[0].category, DeprecationWarning)
-        assert "Implicit decoration" in str(w[0].message)
+        assert "PermissionedView is deprecated" in str(w[0].message)
 
 
 def test_requires_works_as_cbv_decorator(app, ismember, guest):
@@ -96,3 +96,36 @@ def test_requires_works_as_method_decorator(app, ismember, guest):
 
     with pytest.raises(Forbidden), app.app_context(), context:
         MembersCanPost.as_view('memberonly')()
+
+
+def test_requires_on_fail_local_override(app, ismember, guest):
+    @requires(ismember, on_fail="I've failed")
+    def stub():
+        pass
+
+    Allows(app=app, identity_loader=lambda: guest)
+
+    with app.app_context():
+        assert stub() == "I've failed"
+
+
+def test_requires_defaults_to_allows_override(app, ismember, guest):
+    @requires(ismember)
+    def stub():
+        pass
+
+    Allows(app=app, on_fail="I've failed", identity_loader=lambda: guest)
+
+    with app.app_context():
+        assert stub() == "I've failed"
+
+
+def test_requires_on_fail_returning_none_raises(app, ismember, guest):
+    @requires(ismember)
+    def stub():
+        pass
+
+    Allows(app=app, on_fail=lambda *a, **k: None, identity_loader=lambda: guest)
+
+    with pytest.raises(Forbidden), app.app_context():
+        stub()

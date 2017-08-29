@@ -81,3 +81,21 @@ def test_Permission_forbidden_context(app, member, never):
             pass
 
     assert excinfo.value.code == 403
+
+
+def test_Permission_on_fail(app, member, never):
+    Allows(app=app, identity_loader=lambda: member)
+
+    def on_fail(*a, **k):
+        on_fail.failed = True
+
+    on_fail.failed = False
+
+    with app.app_context():
+        p = Permission(never, on_fail=on_fail)
+
+    with pytest.raises(Forbidden):
+        with p:
+            pass
+
+    assert on_fail.failed
