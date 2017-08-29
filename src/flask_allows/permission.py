@@ -1,5 +1,5 @@
 import warnings
-from .allows import _allows
+from .allows import _allows, _make_callable
 
 
 class Permission(object):
@@ -48,6 +48,7 @@ class Permission(object):
         self.requirements = requirements
         self.throws = opts.get('throws', self.ext.throws)
         self.identity = opts.get('identity')
+        self.on_fail = _make_callable(opts.get('on_fail', self.ext.on_fail))
 
     @property
     def throw_type(self):
@@ -68,6 +69,7 @@ class Permission(object):
 
     def __enter__(self):
         if not self:
+            self.on_fail()
             raise self.throws
 
     def __exit__(self, exctype, value, tb):

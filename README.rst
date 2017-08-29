@@ -138,6 +138,96 @@ complex requirement, this is provided as well:
         ...
 
 
+Applying To Class Based View
+----------------------------
+
+Adding permissions to your class based views (CBV) is easy, just include either the
+`allows.requires` or `requires` decorator in the `decorators` attribute of the CBV:
+
+.. code:: Python
+
+    from flask.views import View
+    from flask_allows.views import requires
+    from .requirements import MyRequirement
+
+
+    class SomeCBV(View):
+        decorators = [requires(MyRequirement())
+
+        def dispatch_request(self):
+            ...
+
+
+Alternatively, if you have a method view, and only need to apply permissions to some of the
+methods, you can decorator those methods only:
+
+
+.. code:: Python
+
+    class SomeMethodView(MethodView):
+
+        def get(self):
+            pass
+
+        @requires(MyRequirement())
+        def post(self):
+            ...
+
+
+Get requests won't trigger the permission checking, but posts will.
+
+
+Controlling Failure
+-------------------
+
+When used as a decorator or context manager, Allows will raise werkzeug's Forbidden exception
+by default. However, this exception can be configured to any exception you want:
+
+.. code:: Python
+
+    class MyForbidden(Exception):
+        pass
+
+    # Either at extension creation
+    allows = Allows(throws=MyForbidden)
+
+    # At decoration
+    # also applies to flask_allows.views.requires
+    @allows.requires(MyRequirement(), throws=MyForbidden)
+    def stub():
+        pass
+
+    # Or with Permission
+    perm = Permission(MyRequirement(), throws=MyForbidden)
+
+
+Additionally, an `on_fail` value may be passed. When used with decoration, this value will be
+returned instead of raising an exception. If a function is passed, then it will receive the
+arguments passed to the route handler as well, and if a value is returned from the function,
+it will be returned to the caller instead of raising an exception.
+
+When used with `Permission`, `on_fail` will be called with no arguments and is only invoked when
+used as a context manager. This can be used to flash a message or record bad behavior, but not
+intercept the raised exception.
+
+
+.. code:: Python
+
+    # plain value, will be returned
+    Allows(on_fail="Uh oh, you're not allowed to do that")
+
+    # propagate return from function
+    Allows(on_fail=lambda *a, **k: "Someones been clicking the wrong links")
+
+    # no value returned, exception will be raised
+    Allows(on_fail=lambda *a, **k: flash("Don't do that"))
+
+
+`on_fail` may also be passed to any of `allows.requires`, `flask_allows.views.requires`, or
+`Permission`, in these cases this will take precedence over the `on_fail` configured on the
+`Allows` instance.
+
+
 Why not Flask-Principal?
 ------------------------
 
