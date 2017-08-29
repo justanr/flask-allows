@@ -98,3 +98,33 @@ def test_allows_requires_throws_override(member, atleastmod):
         stub()
 
     assert 'Go away' == excinfo.value.description
+
+
+def test_allows_on_fail(member, atleastmod):
+    allows = Allows(identity_loader=lambda: member, on_fail=lambda *a, **k: "I've failed")
+
+    @allows.requires(atleastmod)
+    def stub():
+        pass
+
+    assert stub() == "I've failed"
+
+
+def test_allows_makes_on_fail_callable(member, atleastmod):
+    allows = Allows(identity_loader=lambda: member, on_fail="I've failed")
+
+    @allows.requires(atleastmod)
+    def stub():
+        pass
+
+    assert stub() == "I've failed"
+
+
+def test_allows_on_fail_override_at_decoration(member, atleastmod):
+    allows = Allows(identity_loader=lambda: member)
+
+    @allows.requires(atleastmod, on_fail=lambda *a, **k: "Overridden failure")
+    def stub():
+        pass
+
+    assert stub() == "Overridden failure"

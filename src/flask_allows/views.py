@@ -1,16 +1,30 @@
-from .permission import Permission
-from flask.views import View, MethodView
-from functools import wraps
 import warnings
+from functools import wraps
+
+from flask.views import MethodView, View
+
+from .allows import _allows, _make_callable
 
 
 def requires(*requirements, **opts):
+
+    def raiser():
+        raise opts.get('throws', _allows.throws)
+
+    def fail(*args, **kwargs):
+        f = _make_callable(opts.get('on_fail', _allows.on_fail))
+        return f(*args, **kwargs) or raiser()
+
     def decorator(f):
+
         @wraps(f)
         def allower(*args, **kwargs):
-            with Permission(*requirements, **opts):
+            if _allows.fulfill(requirements, identity=opts.get('identity')):
                 return f(*args, **kwargs)
+            return fail(*args, **kwargs)
+
         return allower
+
     return decorator
 
 
@@ -30,7 +44,6 @@ class PermissionedView(View):
 
         if cls.requirements:
             view = requires(*cls.requirements)(view)
-
         view.requirements = cls.requirements
         return view
 
