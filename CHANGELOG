@@ -6,6 +6,11 @@ Version 0.4 (Unreleased)
 * Add optional on_fail for `allows.requires` and `requires` decoration
 * Fix coverage path problem with local testing
 
+Version 0.3.2 (2017-08-29)
+==========================
+
+* Fix package data not being included
+
 
 Version 0.3.1 (2017-08-20)
 ==========================
