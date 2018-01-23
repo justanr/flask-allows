@@ -130,7 +130,7 @@ complex requirement, this is provided as well:
 
 .. code:: Python
 
-    from flask_allows import And, Or Not
+    from flask_allows import And, Or
     from .requirements import is_staff, read_only, is_member
 
     @allows.requires(Or(is_staff, And(readonly, is_member)))
