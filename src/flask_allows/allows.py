@@ -1,4 +1,5 @@
 from functools import wraps
+import warnings
 
 from flask import current_app, request
 from werkzeug import LocalProxy
@@ -110,7 +111,7 @@ class Allows(object):
             identity.
         """
         identity = identity or self._identity_loader()
-        return all(r(identity, request) for r in requirements)
+        return all(_call_requirement(r, identity, request) for r in requirements)
 
 
 def __get_allows():
@@ -124,6 +125,19 @@ def _make_callable(func_or_value):
     if not callable(func_or_value):
         return lambda *a, **k: func_or_value
     return func_or_value
+
+def _call_requirement(req, user, request):
+    try:
+        return req(user)
+    except TypeError:
+        warnings.warn(
+            "Passing request to requirements is now deprecated"
+            " and will be removed in 1.0",
+            DeprecationWarning,
+            stacklevel=2
+        )
+
+        return req(user, request)
 
 
 _allows = LocalProxy(__get_allows, name="flask-allows")

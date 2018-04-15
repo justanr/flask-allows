@@ -17,11 +17,19 @@ are also entirely defined by the user. Requirements come in two flavors:
 Function Requirements
 *********************
 
-Function requirements need to accept two arguments: the current identity and
-the current request and return a boolean. For example::
+Function requirements need to accept the current identity and return a boolean
+representing if the requirement has been fulfilled or not::
 
-    def user_is_admin(user, request):
+    def user_is_admin(user):
         return user.level == 'admin'
+
+.. note::
+
+    Optionally, the function may accept the request argument, though this
+    behavior is deprecated as version 0.5.0 and will be removed in 1.0.0::
+
+        def user_is_admin(user, request):
+            return user.level == 'admin'
 
 This function can be provided to any of the requirement runners, if you wanted
 to guard a route with it::
@@ -53,9 +61,21 @@ implemented. For example::
         def __init__(self, permission):
             self.permission = permission
 
-        def fulfill(self, user, request):
+        def fulfill(self, user):
             return self.permission in user.permissions
 
+.. note::
+
+    Optionally, the fulfill method  may accept the request argument, though
+    this behavior is deprecated as version 0.5.0 and will be removed in 1.0.0::
+
+
+        class Has(Requirement):
+            def __init__(self, permission):
+                self.permission = permission
+
+            def fulfill(self, user, request):
+                return self.permission in user.permissions
 
 To apply this to a route::
 

@@ -6,6 +6,8 @@ Version 0.5 (Unreleased)
 ------------------------
 
 * Real documentation
+* Accepting request in requirements is now deprecated, pending removal in
+  1.0
 
 
 Version 0.4 (2017-8-29)
