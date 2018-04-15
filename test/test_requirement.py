@@ -22,9 +22,9 @@ def test_ConditionalRequirement_defaults(always):
         ((always,), operator.and_, None, None)
 
 
-def test_empty_Conditional_is_False(member, request):
+def test_empty_Conditional_is_True(member, request):
     Cond = ConditionalRequirement()
-    assert not Cond(member, request)
+    assert Cond(member, request)
 
 
 def test_custom_ConditionalRequirement(always):
