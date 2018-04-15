@@ -1,10 +1,14 @@
 language: python
+sudo: false
 python:
-  - 2.7
-  - 3.4
-  - 3.5
-  - 3.6
+  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "3.6"
 install:
-    - pip install tox-travis
+  - "pip install -r requirements-travis.txt"
 script:
-    - tox
+  - tox
+after_success:
+  - coverage combine test
+  - coveralls
