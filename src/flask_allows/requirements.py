@@ -108,7 +108,7 @@ class ConditionalRequirement(Requirement):
         if reduced is not None:
             return not reduced if self.negated else reduced
 
-        return False
+        return True
 
     def __and__(self, require):
         return self.And(self, require)
