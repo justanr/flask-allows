@@ -1,4 +1,12 @@
-Version 0.4 (Unreleased)
+Version 0.5 (Unreleased)
+========================
+
+* Real documentation!!!
+* Promote `_allows` context local to public namespace
+* Deprecate passing request to requirements, to be remove in 1.0.0 release
+* Bugfix: Empty ``~flask_allows.requirements.ConditionalRequirement`` now returns True instead of False
+
+Version 0.4 (2017-08-29)
 ========================
 
 * Clarify deprecation message for PermissionedView, will be removed in 0.6
