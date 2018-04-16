@@ -1,5 +1,5 @@
 import warnings
-from .allows import _allows, _make_callable
+from .allows import allows, _make_callable
 
 
 class Permission(object):
@@ -39,7 +39,7 @@ class Permission(object):
     """
 
     def __init__(self, *requirements, **opts):
-        self.ext = _allows._get_current_object()
+        self.ext = allows._get_current_object()
         self.requirements = requirements
         self.throws = opts.get('throws', self.ext.throws)
         self.identity = opts.get('identity')
