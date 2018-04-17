@@ -3,5 +3,5 @@ from .requirements import Requirement, ConditionalRequirement, C, And, Or, Not  
 from .permission import Permission  # noqa
 from .views import requires, PermissionedView, PermissionedMethodView  # noqa
 
-__version__ = "0.4"
+__version__ = "0.4.0"
 __author__ = 'Alec Nikolas Reiter'

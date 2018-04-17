@@ -7,6 +7,25 @@ from .allows import _allows, _make_callable
 
 
 def requires(*requirements, **opts):
+    """
+    Standalone decorator to apply requirements to routes, either function
+    handlers or class based views::
+
+        @requires(MyRequirement())
+        def a_view():
+            pass
+
+        class AView(View):
+            decorators = [requires(MyRequirement())]
+
+    :param requirements: The requirements to apply to this route
+    :param throws: Optional. Exception or exception instance to throw if
+        authorization fails.
+    :param on_fail: Optional. Value or function to use when authorization
+        fails.
+    :param identity: Optional. An identity to use in place of the currently
+        loaded identity.
+    """
 
     def raiser():
         raise opts.get('throws', _allows.throws)

@@ -4,12 +4,20 @@ from flask._compat import with_metaclass
 
 
 class Requirement(with_metaclass(ABCMeta)):
-    """Base for object based Requirements in Flask-Allows. This is quite
+    """
+    Base for object based Requirements in Flask-Allows. This is quite
     useful for requirements that have complex logic that is too much to fit
     inside of a single function.
     """
     @abstractmethod
     def fulfill(self, user, request):
+        """
+        Abstract method called to verify the requirement against the current
+        user and request.
+
+        :param user: The current identity
+        :param request: The current request.
+        """
         return NotImplemented
 
     def __call__(self, user, request):
@@ -20,60 +28,43 @@ class Requirement(with_metaclass(ABCMeta)):
 
 
 class ConditionalRequirement(Requirement):
-    """ConditionalRequirement allows settings up very complex requirements such
-    as: Is this user authenticated *and* is the request a read only method, *or*
-    is the user an adminstrator, or is the user a moderator *and* the user is
-    assigned to this section? Such a complex requirement can be difficult to
-    write as a *single* requirement, but instead ConditionalRequirement can
-    compose individual permissions into a more complex permission:
+    """
+    Used to combine requirements together in ways other than all-or-nothing,
+    such as with an or-reducer (any requirement must be True)::
 
-        ..code-block:: python
+        from flask_allows import Or
 
-        from mypermissions import IsAdmin, IsModerator, Authenticated, ReadOnly
-        from flask_allows import And, Or
+        requires(Or(user_is_admin, user_is_moderator))
 
-        complex = Or(IsAdmin(), IsModerator(), And(Authenticated(), ReadOnly()))
+    or negating a requirement::
 
-    ConditionalRequirement also supports the concept of `Not` as well.
-
-        ..code-block:: python
-
-        from mypermissions import IsBanned
         from flask_allows import Not
 
-        @requires(Not(IsBanned()))
+        requires(Not(user_logged_in))
 
-    There are also shortcuts to each of these once a requirement is wrapped
-    inside a conditional requirement:
+    Combinations may also nested::
 
-        from flask_allows import C, And, Or, Not
-        from mypermissions import IsAuthenticated, ReadOnly
+        Or(user_is_admin, And(user_is_moderator, HasPermission('view_admin')))
 
-        Or(IsAuthenticated(), ReadOnly())
-        C(IsAuthenticated()) | C(ReadOnly())
+    Custom combinators may be built by creating an instance of ConditionalRequirement
+    and supplying any combination of its keyword parameters
 
-        And(IsAuthenticated(), ReadOnly())
-        C(IsAuthenticated) & C(ReadOnly)
+    This class is also exported under the ``C`` alias.
 
-        Not(IsAuthenticated())
-        ~C(IsAuthenticated())
 
-    ConditionalRequirement is also extensible to support any function that
-    accepts two boolean arguments and returns a boolean. For example, a Xor
-    condition can be represented as:
-
-        Xored(IsAuthenticated(), ReadOnly(), op=operator.xor)
-
-    And these custom conditional can be negated as well by passing True to the
-    negated keyword.
-
-    Finally, ConditionalRequirement can be instructed to only check requirements
-    until a certain result is returned by passing the `until` keyword with
-    either `True` or `False`.
-
-    And, Or and Not are implemented by simply passing different keyword
-    arguments, instead of subclassing.
+    :param requirements: Collection of requirements to combine into
+        one logical requirement
+    :param op: Optional, Keyword only. A binary operator that accepts two
+        booleans and returns a boolean.
+    :param until: Optional, Keyword only. A boolean to short circuit on (e.g.
+        if provided with True, then the first True evaluation to return from a
+        requirement ends verification)
+    :param negated: Optional, Keyword only. If true, then the
+        ConditionalRequirement will return the opposite of what it actually
+        evaluated to (e.g. ``ConditionalRequirement(user_logged_in, negated=True)``
+        returns False if the user is logged in)
     """
+
     def __init__(self, *requirements, **kwargs):
         self.requirements = requirements
         self.op = kwargs.get('op', operator.and_)
@@ -82,14 +73,33 @@ class ConditionalRequirement(Requirement):
 
     @classmethod
     def And(cls, *requirements):
+        """
+        Short cut helper to construct a combinator that uses
+        :meth:`operator.and_` to reduce requirement results and stops
+        evaluating on the first False.
+
+        This is also exported at the module level as ``And``
+        """
         return cls(*requirements, op=operator.and_, until=False)
 
     @classmethod
     def Or(cls, *requirements):
+        """
+        Short cut helper to construct a combinator that uses
+        :meth:`operator.or_` to reduce requirement results and stops evaluating
+        on the first True.
+
+        This is also exported at the module level as ``Or``
+        """
         return cls(*requirements, op=operator.or_, until=True)
 
     @classmethod
     def Not(cls, *requirements):
+        """
+        Shortcut helper to negate a requirement or requirements.
+
+        This is also exported at the module as ``Not``
+        """
         return cls(*requirements, negated=True)
 
     def fulfill(self, user, request):

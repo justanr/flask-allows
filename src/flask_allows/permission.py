@@ -3,46 +3,41 @@ from .allows import _allows, _make_callable
 
 
 class Permission(object):
-    """Permission works with the current instance of Allows to provide a context
-    for checking requirements. If the requirements are not met, an exception is
-    raised:
-
-        ..code-block:: Python
-
-        from flask_allows.permissions import Permission
-        from myrequirements import IsAdmin
-
-        def some_function():
-            with Permission(IsAdmin()):
-                return "Awesome!"
-
-    By default, Permission will delegate to the current Allows instance for
-    identity loading, however, an explicit identity can be provided by passing
-    an identity keyword.
-
-        ..code-block:: Python
-
-        with Permission(IsAdmin(), identity=user):
-            print("Doing the thing...")
-
-    Permission also delegates to the current Allows instance for determining
-    what exception to throw. But by providing an exception with the `throws`
-    keyword, it can be overriden:
-
-        ..code-block:: Python
-
-        with Permission(IsAdmin(), throws=Forbidden("You ain't no admin!")):
-            print("Happy message board adminstrator day!")
-
-    In addition to being a context manager, Permission can be used as a boolean
-    as well. In this case, Permission does not raise an exception if the
-    requirements are not met.
-
-        ..code-block:: Python
-
-        if Permission(IsAdmin()):
-            add_admin_stuff_to_response()
     """
+    Used to check requirements as a boolean or context manager. When used as a
+    boolean, it only runs the requirements and returns the raw boolean result::
+
+        p = Permission(is_admin)
+
+        if p:
+            print("Welcome to the club!")
+
+
+    When used as a context manager, it runs both the check and the failure
+    handlers if the requirements are not met::
+
+        p = Permission(is_admin)
+
+        with p:
+            # will run on_fail and throw before reaching if the
+            # requirements on p return False
+            print("Welcome to the club!")
+
+
+    :param requirements: The requirements to check against
+    :param throws: Optional, keyword only. Exception to throw when used as a context manager,
+        if provided it takes precedence over the exception stored on the current
+        application's registered :class:`~flask_allows.allows.Allows` instance
+    :param on_fail: Optional, keyword only. Value or function to use as the on_fail when used
+        as a context manager, if provided takes precedence over the on_fail
+        configured on current application's registered
+        :class:`~flask_allows.allows.Allows` instance
+    :param identity: Optional, keyword only. An identity to verify against
+        instead of the using the loader configured on the current application's
+        registered :class:`~flask_allows.allows.Allows` instance
+
+    """
+
     def __init__(self, *requirements, **opts):
         self.ext = _allows._get_current_object()
         self.requirements = requirements
