@@ -95,9 +95,26 @@ an instantiated object rather than the class itself::
 
 .. danger::
 
-    The :func:`requires` decorator must be applied before the route
-    registration otherwise the unguarded route will be registered into the
-    routing table.
+    If you're using ``requires`` to guard route handlers, the ``route``
+    decorator must be applied at the top of the decorator stack (visually first,
+    logically last)::
+
+        @app.route('/')
+        @requires(SomeRequirement())
+        def index():
+            pass
+
+    If the ``requires`` decorator comes after the ``route`` decorator, then the
+    unguarded function is registered into the application::
+
+        @requires(SomeRequirement())
+        @app.route('/')
+        def index():
+            pass
+
+    This invocation registers the actual ``index`` function into the routing
+    map and then decorates the index function.
+
 
 To apply either of these decorators to class based views, there are two options:
 
