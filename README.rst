@@ -41,6 +41,6 @@ Flask Allows supports 2.7, and 3.4+. Support for 3.3 was ended in the version
 More Information
 ----------------
 
-- For more information, `please visit the documentation <http://flask-allows.readthedocs.io/en/latest/>`_.
+- For more information, `please visit the documentation <https://flask-allows.readthedocs.io/en/latest/>`_.
 - Found a bug, have a question, or want to request a feature? Here is our `issue tracker <https://github.com/justanr/flask-allows/issues>`_.
 - Need the source code? Here is the `repository <https://github.com/justanr/flask-allows>`_
