@@ -140,4 +140,4 @@ def _call_requirement(req, user, request):
         return req(user, request)
 
 
-_allows = LocalProxy(__get_allows, name="flask-allows")
+allows = LocalProxy(__get_allows, name="flask-allows")
