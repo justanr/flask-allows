@@ -1,14 +1,24 @@
 language: python
 sudo: false
 python:
-  - "2.7"
-  - "3.4"
-  - "3.5"
-  - "3.6"
+- '2.7'
+- '3.4'
+- '3.5'
+- '3.6'
 install:
-  - "pip install -r requirements-travis.txt"
+- pip install -r requirements-travis.txt
 script:
-  - tox
+- tox
 after_success:
-  - coverage combine test
-  - coveralls
+- coverage combine test
+- coveralls
+deploy:
+  provider: pypi
+  user: justanr
+  distributions: sdist bdist_wheel
+  password:
+    secure: USNNX2wfJizg8FPAMMM8LrXOQuQ845YQyBGVxPewaXyhsX8eDQM9ZsMF+06txmePq8uV7mzePOeZmjvepf4W7xW0qYyvdgcY1fq5nkS3gvb8xWf0472SE0Kqlfb2xrdqcZO4Ce9xrtqUmRXYe7dxVAj/fR8LtuvJUsS6rPHNMQZeCwXnjAvhn/cOjrIZaQ2mAxAJFfekzNBJdz2pnRbS++iB0Z7YWRct2q3DEh0EWOEgJarpJ0C9zejeXCAMyY+0IPyp0Wx0YlxF/7huZttjCSQknUp8NKHhOUhn4rBW1Ul3Q58r6jMkkQVfZx01DMrBJlPHvteV2/H0kJxpi6TrBOhEyLpYW26lbKm8cpxVZKOzlk15x2kCPPWhxa1UATlJdw0LGB3+m//WRq01rjrMJQbAe9gVDo+aGLf0rvU0G8NPb1K5Vw7ZqHxaNQIvoEssR5JBO7v8HhWcSy2uuVhdNnST9lWXzK1HAltfk6qAzDnt6SLrL6Cb+Z11tFNwwlfrywaBdWiZJqdjlPWkyt4BaSS5fTvjvm4DjPgoxP1gKJBcyfU9F+5PY0mnTZ/n6OcFVRjo/wOOlvUrjRVbApf8d+oslDRnSyU4a+izHBq1QCe9p3dbOObiGrnRDF2TKLxr5EqMrmTXJtuS7RrUI7nyS9kvnJC3RaoKIr6RD8J6AuM=
+  on:
+    tags: true
+    repo: justanr/flask-allows
+    python: '3.6'
