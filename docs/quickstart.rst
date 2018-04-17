@@ -48,14 +48,23 @@ Requirements can either be a child of
         def __init__(self, permission):
             self.permission = permission
 
-        def fulfill(self, user, request):
+        def fulfill(self, user):
             return self.permission in user.permissions
 
 
-or a function that accepts a user object and a request::
+or a function that accepts the current identity::
 
-    def is_admin(user, request):
+    def is_admin(user):
         return 'admin' in user.groups
+
+
+.. note::
+
+    Until version 0.5.0 requirements, both class and function based, needed
+    to accept both an identity and the current request. This has been
+    deprecated in favor of accepting only the identity and will be removed
+    in version 1.0.0.
+
 
 These classes and functions can be as simple or as complicated as needed to
 enforce a particular requirement to guard a route or action inside your

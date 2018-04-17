@@ -118,3 +118,18 @@ def test_NotConditional_many_all_false(never, member, request):
 
 def test_NotConditional_many_mixed(always, never, member, request):
     assert Not(always, never)(member, request)
+
+
+def test_supports_new_style_requirements(member, request):
+    class SomeRequirement(Requirement):
+        def fulfill(self, user):
+            return True
+
+    assert SomeRequirement()(member, request)
+
+
+def test_ConditionalRequirement_supports_new_style_requirements(member, request):
+    def is_true(user):
+        return True
+
+    assert C(is_true)(member, request)

@@ -16,7 +16,7 @@ in your Flask application::
     allows = Allows(app=app, identity_loader=lambda: current_user)
 
     class IsAdmin(Requirement):
-        def requires(self, user, request):
+        def requires(self, user):
             return user.permissions.get('admin')
 
     @app.route('/admin')

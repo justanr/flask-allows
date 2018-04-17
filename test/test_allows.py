@@ -3,6 +3,20 @@ from flask_allows import Allows
 from werkzeug.exceptions import Forbidden
 
 
+def test_warns_about_request_deprecation_with_old_style_requirement(member):
+    import warnings
+    allows = Allows(identity_loader=lambda: member)
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always', DeprecationWarning)
+        allows.fulfill([lambda u, r: True])
+        warnings.simplefilter('default', DeprecationWarning)
+
+    assert len(w) == 1
+    assert issubclass(w[0].category, DeprecationWarning)
+    assert "Passing request to requirements is now deprecated" in str(w[0].message)
+
+
 def test_Allows_defaults():
     allows = Allows()
     assert allows._identity_loader is None and allows.throws is Forbidden
@@ -139,3 +153,15 @@ def test_allows_on_fail_returning_none_raises(member, atleastmod):
 
     with pytest.raises(Forbidden):
         stub()
+
+
+def test_allows_can_call_requirements_with_old_and_new_style_arguments(member):
+    allows = Allows(identity_loader=lambda: member)
+
+    def new_style(user):
+        return True
+
+    def old_style(user, request):
+        return True
+
+    assert allows.fulfill([new_style, old_style])

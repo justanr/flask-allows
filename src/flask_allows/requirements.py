@@ -1,6 +1,7 @@
 import operator
 from abc import ABCMeta, abstractmethod
 from flask._compat import with_metaclass
+from .allows import _call_requirement
 
 
 class Requirement(with_metaclass(ABCMeta)):
@@ -9,11 +10,15 @@ class Requirement(with_metaclass(ABCMeta)):
     useful for requirements that have complex logic that is too much to fit
     inside of a single function.
     """
+
     @abstractmethod
-    def fulfill(self, user, request):
+    def fulfill(self, user, request=None):
         """
         Abstract method called to verify the requirement against the current
         user and request.
+
+        .. versionchanged:: 0.5.0
+            Passing request is now deprecated, pending removal in version 1.0.0
 
         :param user: The current identity
         :param request: The current request.
@@ -21,7 +26,7 @@ class Requirement(with_metaclass(ABCMeta)):
         return NotImplemented
 
     def __call__(self, user, request):
-        return self.fulfill(user, request)
+        return _call_requirement(self.fulfill, user, request)
 
     def __repr__(self):
         return '<{}()>'.format(self.__class__.__name__)
@@ -105,7 +110,7 @@ class ConditionalRequirement(Requirement):
     def fulfill(self, user, request):
         reduced = None
         for r in self.requirements:
-            result = r(user, request)
+            result = _call_requirement(r, user, request)
 
             if reduced is None:
                 reduced = result
