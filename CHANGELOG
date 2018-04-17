@@ -2,16 +2,19 @@ Change Log
 ==========
 
 
-Version 0.5 (Unreleased)
+Version 0.5 (2018-04-17)
 ------------------------
 
 * Real documentation
 * Accepting request in requirements is now deprecated, pending removal in
   1.0
+* Promoted internal ``_allows`` context local to part of the public interface
+* Bug Fix: ConditionalRequirement returned False when no requirements were provided
+    it now returns True and mimics the behavior of ``all`` better
 
 
-Version 0.4 (2017-8-29)
------------------------
+Version 0.4 (2017-08-29)
+------------------------
 
 * Clarify deprecation message for PermissionedView, will be removed in 0.6
 * Deprecate Permission.throw_type for 0.6 removak
