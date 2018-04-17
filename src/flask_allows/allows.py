@@ -43,10 +43,12 @@ class Allows(object):
         Decorator to enforce requirements on routes
 
         :param requirements: Collection of requirements to impose on view
-        :param throws optional: Exception to throw for this route, if provided
-            it takes precedence over the exception stored on the instance
-        :param on_fail optional: Value or function to use as the on_fail for this route, takes
-            precedence over the on_fail configured on the instance.
+        :param throws: Optional, keyword only. Exception to throw for this
+            route, if provided it takes precedence over the exception stored
+            on the instance
+        :param on_fail: Optional, keyword only. Value or function to use as
+            the on_fail for this route, takes precedence over the on_fail
+            configured on the instance.
         """
 
         def raiser():
@@ -88,6 +90,10 @@ class Allows(object):
             @allows.identity_loader
             def load_user():
                 return a_user
+
+
+        If an identity loader is provided at initialization, this method
+        will overwrite it.
 
         :param f: Callable to load the current user
         """

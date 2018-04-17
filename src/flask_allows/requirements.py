@@ -11,6 +11,13 @@ class Requirement(with_metaclass(ABCMeta)):
     """
     @abstractmethod
     def fulfill(self, user, request):
+        """
+        Abstract method called to verify the requirement against the current
+        user and request.
+
+        :param user: The current identity
+        :param request: The current request.
+        """
         return NotImplemented
 
     def __call__(self, user, request):
