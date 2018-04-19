@@ -246,7 +246,7 @@ them as needed.
 
     If your requirement does not need the request object, the
     only change to make is to remove the parameter. If your requirement does
-    need the requirement you may either remove the default value and Allows
+    need the request object you may either remove the default value and Allows
     will determine that you have provided a user-request requirement, or you
     may remove the parameter altogether and import ``request`` directly from
     Flask.
