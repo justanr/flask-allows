@@ -185,3 +185,68 @@ Using these operators, our earlier combined and negated requirements would look 
     ~C(user_is_logged_in)
 
 However, using the named helper methods are often clearer and more efficient.
+
+
+************************************
+Transition to User Only Requirements
+************************************
+
+As of version 0.5, passing the request object directly into a requirement is
+deprecated and will be removed in version 1.0. Considering the following
+requirement::
+
+    from flask_allows import Requirement
+
+    class AllowedToViewPost(Requirement):
+        def fulfill(self, user, request):
+            post_id = request.view_args.get('post_id')
+            if post_id is None:
+                abort(404)
+
+            if post.hidden:
+                return 'view_hidden_post' in user.permissions
+
+            return True
+
+
+In order to make the transition to a user only requirement, the only change to
+make is::
+
+    from flask import request
+    from flask_allows import Requirement
+
+    class AllowedToViewPost(Requirement):
+        def fulfill(self, user):
+            post_id = request.view_args.get('post_id')
+            if post_id is None:
+                abort(404)
+
+            if post.hidden:
+                return 'view_hidden_post' in user.permissions
+
+            return True
+
+To be clear, ``request`` is now being imported directly from the ``flask``
+package. This is the same request object that Allows would pass into the
+requirement itself. And the other change is removing the request parameter
+from the ``fulfill`` definition.
+
+Behind the scenes, Allows handles both definitions and will dispatch between
+them as needed.
+
+.. danger::
+
+    If you have a requirement defined with an optional request, such as::
+
+        def allowed_to_view_post(user, request=None):
+            ...
+
+    Allows will incorrectly determine that you have provided a user only
+    requirement.
+
+    If your requirement does not need the request object, the
+    only change to make is to remove the parameter. If your requirement does
+    need the requirement you may either remove the default value and Allows
+    will determine that you have provided a user-request requirement, or you
+    may remove the parameter altogether and import ``request`` directly from
+    Flask.
