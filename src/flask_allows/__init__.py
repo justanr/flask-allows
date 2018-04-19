@@ -1,4 +1,5 @@
 from .allows import Allows, allows  # noqa
+from .overrides import Override, OverrideManager, overrides  # noqa
 from .permission import Permission  # noqa
 from .requirements import (And, C, ConditionalRequirement, Not, Or,
                            Requirement, wants_request)  # noqa
@@ -12,6 +13,9 @@ __all__ = (
     'ConditionalRequirement',
     'Not',
     'Or',
+    'Override',
+    'OverrideManager',
+    'overrides'
     'Permission',
     'PermissionedMethodView',
     'PermissionedView'

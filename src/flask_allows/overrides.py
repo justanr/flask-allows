@@ -99,7 +99,7 @@ class OverrideManager(object):
             return None
 
     @contextmanager
-    def override(self, requirement, *requirements, use_parent=False):
-        self.push(Override(requirement, *requirements), use_parent)
+    def override(self, override, use_parent=False):
+        self.push(override, use_parent)
         yield self
         self.pop()
