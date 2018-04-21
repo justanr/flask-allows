@@ -1,7 +1,9 @@
 import operator
 from abc import ABCMeta, abstractmethod
 from flask._compat import with_metaclass
+from flask import request
 from .allows import _call_requirement
+from functools import wraps
 
 
 class Requirement(with_metaclass(ABCMeta)):
@@ -155,3 +157,23 @@ class ConditionalRequirement(Requirement):
 
 (C, And, Or, Not) = (ConditionalRequirement, ConditionalRequirement.And,
                      ConditionalRequirement.Or, ConditionalRequirement.Not)
+
+
+def wants_request(f):
+    """
+    Helper decorator for transitioning to user-only requirements, this aids
+    in situations where the request may be marked optional and causes an
+    incorrect flow into user-only requirements.
+
+    This decorator causes the requirement to look like a user-only requirement
+    but passes the current request context internally to the requirement.
+
+    This decorator is intended only to assist during a transitionary phase
+    and will be removed in flask-allows 1.0
+
+    See: justanr/flask-allows #20 and justanr/flask-allows #27
+    """
+    @wraps(f)
+    def wrapper(user):
+        return f(user, request)
+    return wrapper

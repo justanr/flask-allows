@@ -250,3 +250,8 @@ them as needed.
     will determine that you have provided a user-request requirement, or you
     may remove the parameter altogether and import ``request`` directly from
     Flask.
+
+    Additionally, there is :meth:`~flask_allows.requirements.wants_request`
+    which marks the requirement as user only but passes the current request
+    behind the scenes. This decorator is intended only to assist during a
+    transitionary phase and will be remove in flask-allows 1.0
