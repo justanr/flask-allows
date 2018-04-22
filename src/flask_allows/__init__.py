@@ -20,5 +20,5 @@ __all__ = (
     'wants_request',
 )
 
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 __author__ = 'Alec Nikolas Reiter'
