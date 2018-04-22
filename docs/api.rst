@@ -28,3 +28,4 @@ Helpers
 =======
 
 .. autofunction:: flask_allows.views.requires
+.. autofunction:: flask_allows.requirements.wants_request

@@ -1,6 +1,8 @@
-import pytest
-from flask_allows import Requirement, ConditionalRequirement, And, Or, Not, C
 import operator
+
+import pytest
+from flask_allows import (And, C, ConditionalRequirement, Not, Or, Requirement,
+                          wants_request, Allows)
 
 
 def test_cant_create_Requirement():
@@ -133,3 +135,22 @@ def test_ConditionalRequirement_supports_new_style_requirements(member, request)
         return True
 
     assert C(is_true)(member, request)
+
+
+@pytest.mark.regression
+def test_wants_request_stops_incorrect_useronly_flow(member, request):
+    """
+    When a request parameter has a default value, requirement runners will
+    incorrectly decide it is a user only requirement and not provide the
+    request object to it.
+    """
+    SENTINEL = object()
+
+    def my_requirement(user, request=SENTINEL):
+        return request is not SENTINEL
+
+    allows = Allows(app=None, identity_loader=lambda: member)
+
+    # incorrect flow happens here, only member is passed
+    assert not allows.fulfill([my_requirement], member)
+    assert allows.fulfill([wants_request(my_requirement)], member)

@@ -1,7 +1,7 @@
 from .allows import Allows, allows  # noqa
 from .permission import Permission  # noqa
-from .requirements import Or  # noqa
-from .requirements import And, C, ConditionalRequirement, Not, Requirement
+from .requirements import (And, C, ConditionalRequirement, Not, Or,
+                           Requirement, wants_request)  # noqa
 from .views import PermissionedMethodView, PermissionedView, requires  # noqa
 
 __all__ = (
@@ -17,6 +17,7 @@ __all__ = (
     'PermissionedView'
     'Requirement',
     'requires',
+    'wants_request',
 )
 
 __version__ = "0.5.0"
