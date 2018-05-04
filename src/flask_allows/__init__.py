@@ -10,7 +10,7 @@ from .requirements import (
     Requirement,
     wants_request,
 )
-from .views import PermissionedMethodView, PermissionedView, requires
+from .views import requires
 
 __all__ = (
     "allows",
@@ -24,8 +24,7 @@ __all__ = (
     "OverrideManager",
     "current_overrides",
     "Permission",
-    "PermissionedMethodView",
-    "PermissionedView",
+    "Permission",
     "Requirement",
     "requires",
     "wants_request",
