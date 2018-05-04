@@ -1,8 +1,6 @@
 from functools import wraps
 
-from flask.views import MethodView, View
-
-from .allows import allows, _make_callable
+from .allows import allows
 
 
 def requires(*requirements, **opts):
@@ -26,25 +24,29 @@ def requires(*requirements, **opts):
         loaded identity.
     """
 
-    def raiser():
-        raise opts.get('throws', allows.throws)
-
-    def fail(*args, **kwargs):
-        f = _make_callable(opts.get('on_fail', allows.on_fail))
-        res = f(*args, **kwargs)
-
-        if res is not None:
-            return res
-
-        raiser()
+    identity = opts.get("identity")
+    on_fail = opts.get("on_fail")
+    throws = opts.get("throws")
 
     def decorator(f):
 
         @wraps(f)
         def allower(*args, **kwargs):
-            if allows.fulfill(requirements, identity=opts.get('identity')):
-                return f(*args, **kwargs)
-            return fail(*args, **kwargs)
+
+            result = allows.run(
+                requirements,
+                identity=identity,
+                on_fail=on_fail,
+                throws=throws,
+                f_args=args,
+                f_kwargs=kwargs,
+            )
+
+            # authorization failed
+            if result is not None:
+                return result
+
+            return f(*args, **kwargs)
 
         return allower
 
