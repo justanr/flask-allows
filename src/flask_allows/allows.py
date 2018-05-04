@@ -3,6 +3,7 @@ from functools import wraps
 
 from flask import current_app, request
 from werkzeug import LocalProxy
+from werkzeug.datastructures import ImmutableDict
 from werkzeug.exceptions import Forbidden
 
 from .overrides import Override, OverrideManager
@@ -62,26 +63,29 @@ class Allows(object):
             configured on the instance.
         """
 
-        def raiser():
-            raise opts.get("throws", self.throws)
-
-        def fail(*args, **kwargs):
-            f = _make_callable(opts.get("on_fail", self.on_fail))
-            res = f(*args, **kwargs)
-
-            if res is not None:
-                return res
-
-            raiser()
+        identity = opts.get("identity")
+        on_fail = opts.get("on_fail")
+        throws = opts.get("throws")
 
         def decorator(f):
 
             @wraps(f)
             def allower(*args, **kwargs):
-                if self.fulfill(requirements):
-                    return f(*args, **kwargs)
-                else:
-                    return fail(*args, **kwargs)
+
+                result = self.run(
+                    requirements,
+                    identity=identity,
+                    on_fail=on_fail,
+                    throws=throws,
+                    f_args=args,
+                    f_kwargs=kwargs,
+                )
+
+                # authorization failed
+                if result is not None:
+                    return result
+
+                return f(*args, **kwargs)
 
             return allower
 
@@ -144,6 +148,32 @@ class Allows(object):
         """
         while self.overrides.current is not None:
             self.overrides.pop()
+
+    def run(
+        self,
+        requirements,
+        identity=None,
+        throws=None,
+        on_fail=None,
+        f_args=(),
+        f_kwargs=ImmutableDict(),
+    ):
+        """
+        Used to preform a full run of the requirements and the options given,
+        this method will invoke on_fail and/or throw the appropriate exception
+        type. Can be passed arguments to call on_fail with via f_args (which are
+        passed positionally) and f_kwargs (which are passed as keyword).
+        """
+
+        identity = identity or self._identity_loader()
+        throws = throws or self.throws
+        on_fail = _make_callable(on_fail) if on_fail is not None else self.on_fail
+
+        if not self.fulfill(requirements, identity):
+            result = on_fail(*f_args, **f_kwargs)
+            if result is not None:
+                return result
+            raise throws
 
 
 def __get_allows():
