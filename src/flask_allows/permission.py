@@ -1,4 +1,3 @@
-import warnings
 from .allows import allows, _make_callable
 
 
@@ -44,18 +43,6 @@ class Permission(object):
         self.throws = opts.get('throws', self.ext.throws)
         self.identity = opts.get('identity')
         self.on_fail = _make_callable(opts.get('on_fail', self.ext.on_fail))
-
-    @property
-    def throw_type(self):
-        warnings.warn(
-            "Permission.throw_type is deprecated and will be removed in 0.6",
-            DeprecationWarning,
-            stacklevel=2
-        )
-        if isinstance(self.throws, type):
-            return self.throws
-        else:
-            return type(self.throws)
 
     def __bool__(self):
         return self.ext.fulfill(self.requirements, identity=self.identity)
