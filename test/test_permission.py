@@ -1,70 +1,44 @@
-from flask_allows import Permission, Allows
 from werkzeug.exceptions import Forbidden
+
 import pytest
-
-
-def test_Permission_init(app, ismember):
-    allows = Allows(app=app)
-
-    with app.app_context():
-        p = Permission(ismember)
-
-    assert (
-        p.ext is allows and
-        p.requirements == (ismember,) and
-        p.throws is Forbidden and
-        p.identity is None
-    )
+from flask_allows import Allows, Permission
 
 
 def test_Permission_provide_ident(app, member, ismember):
     Allows(app=app)
 
-    with app.app_context():
-        p = Permission(ismember, identity=member)
+    p = Permission(ismember, identity=member)
 
     assert p.identity is member
 
 
-def test_Permission_provide_exception(app, member, ismember):
-    Allows(app=app)
-
-    class MyForbid(Forbidden):
-        pass
-
-    with app.app_context():
-        p = Permission(ismember, throws=MyForbid("Nope"))
-
-    assert isinstance(p.throws, MyForbid) and p.throws.description == "Nope"
-
-
 def test_Permission_as_bool(app, member, always):
     Allows(app=app, identity_loader=lambda: member)
+    p = Permission(always)
 
     with app.app_context():
-        p = Permission(always)
+        result = bool(p)
 
-    assert p and always.called_with['user'] is member
+    assert result and always.called_with["user"] is member
 
 
 def test_Permission_bool_doesnt_raise(app, member, never):
     Allows(app=app, identity_loader=lambda: member)
+    p = Permission(never)
 
     with app.app_context():
-        p = Permission(never)
+        result = bool(p)
 
-    assert not p and never.called_with['user'] is member
+    assert not result and never.called_with["user"] is member
 
 
 def test_Permission_allowed_context(app, member, always):
     Allows(app=app, identity_loader=lambda: member)
 
     allowed = False
+    p = Permission(always)
 
-    with app.app_context():
-        p = Permission(always)
-
-    with p:
+    with app.app_context(), p:
         allowed = True
 
     assert allowed
@@ -72,13 +46,12 @@ def test_Permission_allowed_context(app, member, always):
 
 def test_Permission_forbidden_context(app, member, never):
     Allows(app=app, identity_loader=lambda: member)
+    p = Permission(never)
 
     with app.app_context():
-        p = Permission(never)
-
-    with pytest.raises(Forbidden) as excinfo:
-        with p:
-            pass
+        with pytest.raises(Forbidden) as excinfo:
+            with p:
+                pass
 
     assert excinfo.value.code == 403
 
@@ -90,12 +63,11 @@ def test_Permission_on_fail(app, member, never):
         on_fail.failed = True
 
     on_fail.failed = False
+    p = Permission(never, on_fail=on_fail)
 
     with app.app_context():
-        p = Permission(never, on_fail=on_fail)
 
-    with pytest.raises(Forbidden):
-        with p:
-            pass
-
+        with pytest.raises(Forbidden):
+            with p:
+                pass
     assert on_fail.failed

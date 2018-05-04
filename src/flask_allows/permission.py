@@ -1,4 +1,4 @@
-from .allows import allows, _make_callable
+from .allows import allows
 
 
 class Permission(object):
@@ -38,21 +38,24 @@ class Permission(object):
     """
 
     def __init__(self, *requirements, **opts):
-        self.ext = allows._get_current_object()
         self.requirements = requirements
-        self.throws = opts.get('throws', self.ext.throws)
-        self.identity = opts.get('identity')
-        self.on_fail = _make_callable(opts.get('on_fail', self.ext.on_fail))
+        self.throws = opts.get("throws")
+        self.identity = opts.get("identity")
+        self.on_fail = opts.get("on_fail")
 
     def __bool__(self):
-        return self.ext.fulfill(self.requirements, identity=self.identity)
+        return allows.fulfill(self.requirements, identity=self.identity)
 
     __nonzero__ = __bool__
 
     def __enter__(self):
-        if not self:
-            self.on_fail()
-            raise self.throws
+        allows.run(
+            self.requirements,
+            identity=self.identity,
+            throws=self.throws,
+            on_fail=self.on_fail,
+            use_on_fail_return=False,
+        )
 
     def __exit__(self, exctype, value, tb):
         pass
