@@ -157,6 +157,7 @@ class Allows(object):
         on_fail=None,
         f_args=(),
         f_kwargs=ImmutableDict(),
+        use_on_fail_return=True
     ):
         """
         Used to preform a full run of the requirements and the options given,
@@ -165,13 +166,12 @@ class Allows(object):
         passed positionally) and f_kwargs (which are passed as keyword).
         """
 
-        identity = identity or self._identity_loader()
         throws = throws or self.throws
         on_fail = _make_callable(on_fail) if on_fail is not None else self.on_fail
 
         if not self.fulfill(requirements, identity):
             result = on_fail(*f_args, **f_kwargs)
-            if result is not None:
+            if use_on_fail_return and result is not None:
                 return result
             raise throws
 
