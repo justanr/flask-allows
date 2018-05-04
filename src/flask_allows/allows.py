@@ -21,7 +21,9 @@ class Allows(object):
         authorization fails.
     """
 
-    def __init__(self, app=None, identity_loader=None, throws=Forbidden, on_fail=None):
+    def __init__(
+        self, app=None, identity_loader=None, throws=Forbidden, on_fail=None
+    ):
         self._identity_loader = identity_loader
         self.throws = throws
 
@@ -121,9 +123,13 @@ class Allows(object):
         identity = identity or self._identity_loader()
 
         if self.overrides.current is not None:
-            requirements = (r for r in requirements if r not in self.overrides.current)
+            requirements = (
+                r for r in requirements if r not in self.overrides.current
+            )
 
-        return all(_call_requirement(r, identity, request) for r in requirements)
+        return all(
+            _call_requirement(r, identity, request) for r in requirements
+        )
 
     def clear_all_overrides(self):
         """
