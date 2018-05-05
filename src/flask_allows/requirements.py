@@ -1,9 +1,12 @@
 import operator
 from abc import ABCMeta, abstractmethod
-from flask._compat import with_metaclass
-from flask import request
-from .allows import _call_requirement
 from functools import wraps
+
+from flask import request
+from flask._compat import with_metaclass
+
+from .allows import _call_requirement
+from .overrides import current_overrides
 
 
 class Requirement(with_metaclass(ABCMeta)):
@@ -31,7 +34,7 @@ class Requirement(with_metaclass(ABCMeta)):
         return _call_requirement(self.fulfill, user, request)
 
     def __repr__(self):
-        return '<{}()>'.format(self.__class__.__name__)
+        return "<{}()>".format(self.__class__.__name__)
 
 
 class ConditionalRequirement(Requirement):
@@ -74,9 +77,9 @@ class ConditionalRequirement(Requirement):
 
     def __init__(self, *requirements, **kwargs):
         self.requirements = requirements
-        self.op = kwargs.get('op', operator.and_)
-        self.until = kwargs.get('until')
-        self.negated = kwargs.get('negated')
+        self.op = kwargs.get("op", operator.and_)
+        self.until = kwargs.get("until")
+        self.negated = kwargs.get("negated")
 
     @classmethod
     def And(cls, *requirements):
@@ -111,7 +114,14 @@ class ConditionalRequirement(Requirement):
 
     def fulfill(self, user, request):
         reduced = None
-        for r in self.requirements:
+
+        requirements = self.requirements
+
+        # can't use is because is a proxy
+        if current_overrides != None:  # noqa: E711
+            requirements = (r for r in requirements if r not in current_overrides)
+
+        for r in requirements:
             result = _call_requirement(r, user, request)
 
             if reduced is None:
@@ -139,24 +149,28 @@ class ConditionalRequirement(Requirement):
     def __repr__(self):
         additional = []
 
-        for name in ['op', 'negated', 'until']:
+        for name in ["op", "negated", "until"]:
             value = getattr(self, name)
             if not value:
                 continue
-            additional.append('{0}={1!r}'.format(name, value))
+            additional.append("{0}={1!r}".format(name, value))
 
         if additional:
-            additional = ' {}'.format(', '.join(additional))
+            additional = " {}".format(", ".join(additional))
         else:
-            additional = ''
+            additional = ""
 
-        return "<{0} requirements={1!r}{2}>".format(self.__class__.__name__,
-                                                    self.requirements,
-                                                    additional)
+        return "<{0} requirements={1!r}{2}>".format(
+            self.__class__.__name__, self.requirements, additional
+        )
 
 
-(C, And, Or, Not) = (ConditionalRequirement, ConditionalRequirement.And,
-                     ConditionalRequirement.Or, ConditionalRequirement.Not)
+(C, And, Or, Not) = (
+    ConditionalRequirement,
+    ConditionalRequirement.And,
+    ConditionalRequirement.Or,
+    ConditionalRequirement.Not,
+)
 
 
 def wants_request(f):
@@ -173,7 +187,9 @@ def wants_request(f):
 
     See: justanr/flask-allows #20 and justanr/flask-allows #27
     """
+
     @wraps(f)
     def wrapper(user):
         return f(user, request)
+
     return wrapper

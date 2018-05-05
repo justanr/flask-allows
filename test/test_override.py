@@ -33,6 +33,33 @@ class AClassRequirement(Requirement):
         ) and self.the_value == other.the_value
 
 
+class TestCurrentOverrides(object):
+
+    def test_current_overrides_with_no_context_returns_None(self):
+        assert current_overrides == None  # noqa: E711
+
+    def test_current_overrides_returns_active_context(self, never):
+        manager = OverrideManager()
+        o = Override(never)
+
+        manager.push(o)
+
+        assert o == current_overrides
+
+        manager.pop()
+
+    def test_current_overrides_points_towards_temporary_context(self, never, always):
+        manager = OverrideManager()
+        manager.push(Override(never))
+
+        o = Override(always)
+
+        with manager.override(o):
+            assert o == current_overrides
+
+        manager.pop()
+
+
 class TestOverride(object):
 
     def test_shows_if_requirement_is_overridden(self):
@@ -129,14 +156,3 @@ class TestOverrideManager(object):
         with manager.override(parent):
             with manager.override(child, use_parent=True):
                 assert expected == manager.current
-
-    @pytest.fixture(autouse=True)
-    def assert_context_is_empty(self):
-        assert _override_ctx_stack.top is None
-        yield
-
-    @pytest.fixture(autouse=True)
-    def pop_til_you_stop(self):
-        yield
-        while _override_ctx_stack.top is not None:
-            _override_ctx_stack.pop()

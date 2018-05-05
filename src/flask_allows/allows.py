@@ -119,6 +119,10 @@ class Allows(object):
             identity.
         """
         identity = identity or self._identity_loader()
+
+        if self.overrides.current is not None:
+            requirements = (r for r in requirements if r not in self.overrides.current)
+
         return all(_call_requirement(r, identity, request) for r in requirements)
 
     def clear_all_overrides(self):

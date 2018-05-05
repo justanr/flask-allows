@@ -13,7 +13,7 @@ def current_overrides():
     """
     rv = _override_ctx_stack.top
     if rv is None:
-        raise RuntimeError("No override manager context active")
+        return None
     return rv[1]
 
 
