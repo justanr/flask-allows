@@ -7,7 +7,10 @@ _override_ctx_stack = LocalStack()
 
 
 @LocalProxy
-def overrides():
+def current_overrides():
+    """
+    Proxy to the currently pushed override context.
+    """
     rv = _override_ctx_stack.top
     if rv is None:
         raise RuntimeError("No override manager context active")
@@ -15,11 +18,13 @@ def overrides():
 
 
 def _isinstance(f):
+
     @wraps(f)
     def check(self, other):
         if not isinstance(other, Override):
             return NotImplemented
         return f(self, other)
+
     return check
 
 
@@ -35,31 +40,46 @@ class Override(object):
     Override objects can be combined and compared to each other with the following
     operators:
 
-    - ``+`` creates a new overide object by combining two others, the new
-        override overrides all requirements that both parents did.
+    ``+`` creates a new overide object by combining two others, the new
+    override overrides all requirements that both parents did.
 
-    - ``+=`` updates the target override with all the requirements from the
-        assigned override.
+    ``+=`` similar to ``+`` except it is an inplace update.
 
-    - ``-`` creates a new override instance by removing any overrides from
+    ``-`` creates a new override instance by removing any overrides from
     the first instance that are contained in the second instance.
 
-    - ``-=`` similar to ``-`` except it is an inplace update
+    ``-=`` similar to ``-`` except it is an inplace update
 
-    - ``==`` compares two overrides and returns true if both have the same
-        disabled requirements.
+    ``==`` compares two overrides and returns true if both have the same
+    disabled requirements.
     """
 
     def __init__(self, *requirements):
         self._requirements = set(requirements)
 
     def add(self, requirement, *requirements):
+        """
+        Adds one or more requirements to the override context.
+        """
         self._requirements.update((requirement,) + requirements)
 
     def remove(self, requirement, *requirements):
+        """
+        Removes one or more requirements from the override context.
+        """
         self._requirements.difference_update((requirement,) + requirements)
 
     def is_overridden(self, requirement):
+        """
+        Checks if a particular requirement is current overridden. Can also
+        be used as ``in``::
+
+            override = Override()
+            override.add(is_admin)
+            override.is_overridden(is_admin)  # True
+            is_admin in override  # True
+
+        """
         return requirement in self._requirements
 
     def __contains__(self, other):
@@ -99,7 +119,7 @@ class Override(object):
 class OverrideManager(object):
     """
     Used to manage the process of overriding and removing overrides.
-    This class shouldn't be used directly, instead use allows.overrides
+    This class shouldn't be used directly, instead use ``allows.overrides``
     to access these controls.
     """
 
@@ -107,6 +127,10 @@ class OverrideManager(object):
         """
         Binds an override to the current context, optionally use the
         current overrides in conjunction with this override
+
+        If ``use_parent`` is true, a new override is created from the
+        parent and child overrides rather than manipulating either
+        directly.
         """
         current = self.current
         if use_parent and current:
@@ -116,7 +140,10 @@ class OverrideManager(object):
 
     def pop(self):
         """
-        Pops the latest override context
+        Pops the latest override context.
+
+        If the override context was pushed by a different override manager,
+        a ``RuntimeError`` is raised.
         """
         rv = _override_ctx_stack.pop()
         if rv is None or rv[0] is not self:
@@ -137,9 +164,9 @@ class OverrideManager(object):
     @contextmanager
     def override(self, override, use_parent=False):
         """
-        Allows temporarily pushing an override context, yields itself into
-        the following block.
+        Allows temporarily pushing an override context, yields the new context
+        into the following block.
         """
         self.push(override, use_parent)
-        yield self
+        yield self.current
         self.pop()

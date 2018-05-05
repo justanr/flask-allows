@@ -4,7 +4,8 @@ from functools import wraps
 from flask import current_app, request
 from werkzeug import LocalProxy
 from werkzeug.exceptions import Forbidden
-from .overrides import OverrideManager, _override_ctx_stack
+
+from .overrides import Override, OverrideManager
 
 
 class Allows(object):
@@ -38,7 +39,11 @@ class Allows(object):
             app.extensions = {}
         app.extensions["allows"] = self
 
-        @app.teardown_appcontext
+        @app.before_request
+        def start_context(*a, **k):
+            self.overrides.push(Override())
+
+        @app.after_request
         def cleanup(*a, **k):
             self.clear_all_overrides()
 
@@ -116,10 +121,19 @@ class Allows(object):
         identity = identity or self._identity_loader()
         return all(_call_requirement(r, identity, request) for r in requirements)
 
-
     def clear_all_overrides(self):
-        while _override_ctx_stack.top is not None:
-            _override_ctx_stack.pop()
+        """
+        Helper method to remove all override contexts, this is called automatically
+        during the after request phase in Flask. However it is provided here
+        if override contexts need to be cleared independent of the application
+        context.
+
+        If an override context is found that originated from an OverrideManager
+        instance not controlled by the Allows object, a ``RuntimeError``
+        will be raised.
+        """
+        while self.overrides.current is not None:
+            self.overrides.pop()
 
 
 def __get_allows():

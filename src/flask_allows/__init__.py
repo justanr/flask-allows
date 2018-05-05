@@ -1,5 +1,5 @@
 from .allows import Allows, allows
-from .overrides import Override, OverrideManager, overrides
+from .overrides import Override, OverrideManager, current_overrides
 from .permission import Permission
 from .requirements import (
     And,
@@ -22,7 +22,7 @@ __all__ = (
     "Or",
     "Override",
     "OverrideManager",
-    "overrides",
+    "current_overrides",
     "Permission",
     "PermissionedMethodView",
     "PermissionedView",
