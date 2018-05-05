@@ -1,9 +1,10 @@
-from functools import wraps
 import warnings
+from functools import wraps
 
 from flask import current_app, request
 from werkzeug import LocalProxy
 from werkzeug.exceptions import Forbidden
+from .overrides import OverrideManager, _override_ctx_stack
 
 
 class Allows(object):
@@ -19,14 +20,12 @@ class Allows(object):
         authorization fails.
     """
 
-    def __init__(
-            self, app=None, identity_loader=None, throws=Forbidden,
-            on_fail=None
-    ):
+    def __init__(self, app=None, identity_loader=None, throws=Forbidden, on_fail=None):
         self._identity_loader = identity_loader
         self.throws = throws
 
         self.on_fail = _make_callable(on_fail)
+        self.overrides = OverrideManager()
 
         if app:
             self.init_app(app)
@@ -35,9 +34,13 @@ class Allows(object):
         """
         Initializes the Flask-Allows object against the provided application
         """
-        if not hasattr(app, 'extensions'):  # pragma: no cover
+        if not hasattr(app, "extensions"):  # pragma: no cover
             app.extensions = {}
-        app.extensions['allows'] = self
+        app.extensions["allows"] = self
+
+        @app.teardown_appcontext
+        def cleanup(*a, **k):
+            self.clear_all_overrides()
 
     def requires(self, *requirements, **opts):
         """
@@ -53,10 +56,10 @@ class Allows(object):
         """
 
         def raiser():
-            raise opts.get('throws', self.throws)
+            raise opts.get("throws", self.throws)
 
         def fail(*args, **kwargs):
-            f = _make_callable(opts.get('on_fail', self.on_fail))
+            f = _make_callable(opts.get("on_fail", self.on_fail))
             res = f(*args, **kwargs)
 
             if res is not None:
@@ -114,17 +117,24 @@ class Allows(object):
         return all(_call_requirement(r, identity, request) for r in requirements)
 
 
+    def clear_all_overrides(self):
+        while _override_ctx_stack.top is not None:
+            _override_ctx_stack.pop()
+
+
 def __get_allows():
     "Internal helper"
     try:
-        return current_app.extensions['allows']
+        return current_app.extensions["allows"]
     except (AttributeError, KeyError):
         raise RuntimeError("Flask-Allows not configured against current app")
+
 
 def _make_callable(func_or_value):
     if not callable(func_or_value):
         return lambda *a, **k: func_or_value
     return func_or_value
+
 
 def _call_requirement(req, user, request):
     try:
@@ -134,7 +144,7 @@ def _call_requirement(req, user, request):
             "Passing request to requirements is now deprecated"
             " and will be removed in 1.0",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
 
         return req(user, request)
