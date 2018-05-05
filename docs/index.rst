@@ -36,6 +36,7 @@ Content
    quickstart
    requirements
    helpers
+   overrides
    failure
    api
    changelog

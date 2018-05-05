@@ -24,6 +24,17 @@ Requirement
 .. autoclass:: flask_allows.requirements.ConditionalRequirement
     :members:
 
+
+Overrides
+=========
+
+.. autoclass:: flask_allows.overrides.Override
+    :members:
+
+.. autoclass:: flask_allows.overrides.OverrideManager
+    :members:
+
+
 Helpers
 =======
 

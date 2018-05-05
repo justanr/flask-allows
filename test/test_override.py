@@ -3,7 +3,7 @@ from flask_allows.overrides import (
     Override,
     OverrideManager,
     _override_ctx_stack,
-    overrides,
+    current_overrides,
 )
 from flask_allows.requirements import Requirement
 
@@ -83,7 +83,7 @@ class TestOverrideManager(object):
         manager = OverrideManager()
         override = Override(some_requirement)
         manager.push(override)
-        assert some_requirement in overrides
+        assert some_requirement in current_overrides
 
     def test_manager_throws_if_different_context_popped(self):
         manager = OverrideManager()

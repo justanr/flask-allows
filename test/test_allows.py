@@ -1,16 +1,20 @@
 import pytest
-from flask_allows import Allows
+from flask import Response
 from werkzeug.exceptions import Forbidden
+
+from flask_allows import Allows
+from flask_allows.overrides import current_overrides
 
 
 def test_warns_about_request_deprecation_with_old_style_requirement(member):
     import warnings
+
     allows = Allows(identity_loader=lambda: member)
 
     with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter('always', DeprecationWarning)
+        warnings.simplefilter("always", DeprecationWarning)
         allows.fulfill([lambda u, r: True])
-        warnings.simplefilter('default', DeprecationWarning)
+        warnings.simplefilter("default", DeprecationWarning)
 
     assert len(w) == 1
     assert issubclass(w[0].category, DeprecationWarning)
@@ -24,7 +28,7 @@ def test_Allows_defaults():
 
 def test_Allows_config_with_app(app):
     allows = Allows(app)
-    assert hasattr(app, 'extensions') and allows is app.extensions['allows']
+    assert hasattr(app, "extensions") and allows is app.extensions["allows"]
 
 
 def test_Allows_init_app(app):
@@ -32,7 +36,7 @@ def test_Allows_init_app(app):
     assert app.extensions == {}
 
     allows.init_app(app)
-    assert hasattr(app, 'extensions') and allows is app.extensions['allows']
+    assert hasattr(app, "extensions") and allows is app.extensions["allows"]
 
 
 def test_Allows_identity_loader_on_init(member):
@@ -61,7 +65,7 @@ def test_Allows_identity_loader_func(member):
 def test_Allows_fulfill_true(member, always, request):
     allows = Allows(identity_loader=lambda: member)
     assert allows.fulfill([always])
-    assert always.called_with == {'user': member, 'request': request}
+    assert always.called_with == {"user": member, "request": request}
 
 
 def test_Allows_fulfill_false(member, never, request):
@@ -72,7 +76,7 @@ def test_Allows_fulfill_false(member, never, request):
 def test_Allows_fulfill_ident_override(member, guest, spy):
     allows = Allows(identity_loader=lambda: guest)
     allows.fulfill([spy], identity=member)
-    assert spy.called_with['user'] is member
+    assert spy.called_with["user"] is member
 
 
 def test_allows_requires(member, ismember):
@@ -99,23 +103,26 @@ def test_allows_requires_throws(member, atleastmod):
 
 
 def test_allows_requires_throws_override(member, atleastmod):
+
     class MyForbid(Forbidden):
         pass
 
     allows = Allows(identity_loader=lambda: member)
 
-    @allows.requires(atleastmod, throws=MyForbid('Go away'))
+    @allows.requires(atleastmod, throws=MyForbid("Go away"))
     def stub():
         pass
 
     with pytest.raises(MyForbid) as excinfo:
         stub()
 
-    assert 'Go away' == excinfo.value.description
+    assert "Go away" == excinfo.value.description
 
 
 def test_allows_on_fail(member, atleastmod):
-    allows = Allows(identity_loader=lambda: member, on_fail=lambda *a, **k: "I've failed")
+    allows = Allows(
+        identity_loader=lambda: member, on_fail=lambda *a, **k: "I've failed"
+    )
 
     @allows.requires(atleastmod)
     def stub():
@@ -165,3 +172,26 @@ def test_allows_can_call_requirements_with_old_and_new_style_arguments(member):
         return True
 
     assert allows.fulfill([new_style, old_style])
+
+
+def test_allows_cleans_up_override_contexts_in_after_request(app, member, never):
+    allows = Allows(app, identity_loader=lambda: member)
+
+    # need to route a request for this test so the whole before/after request
+    # cycle is invoked
+
+    @app.route("/")
+    def index():
+        assert allows.overrides.current.is_overridden(never)
+        return Response("...")
+
+    @app.before_request
+    def disable_never(*a, **k):
+        current_overrides.add(never)
+
+    with app.test_request_context("/"):
+        app.preprocess_request()
+        result = index()
+        app.process_response(result)
+
+    assert allows.overrides.current is None
