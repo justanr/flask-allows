@@ -1,22 +1,22 @@
 .. _api:
 
-###
-API
-###
+################
+flask_allows API
+################
 
 Extension
 =========
 .. autoclass:: flask_allows.allows.Allows
     :members:
 
-Permission
-==========
+Permission Helper
+=================
 
 .. autoclass:: flask_allows.permission.Permission
     :members:
 
-Requirement
-===========
+Requirements Base Classes
+=========================
 
 .. autoclass:: flask_allows.requirements.Requirement
     :members:
@@ -25,8 +25,8 @@ Requirement
     :members:
 
 
-Overrides
-=========
+Override Management
+===================
 
 .. autoclass:: flask_allows.overrides.Override
     :members:
@@ -35,8 +35,8 @@ Overrides
     :members:
 
 
-Helpers
-=======
+Utilities
+=========
 
 .. autofunction:: flask_allows.views.requires
 .. autofunction:: flask_allows.requirements.wants_request
