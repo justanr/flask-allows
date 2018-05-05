@@ -1,6 +1,10 @@
 import pytest
-from flask_allows.overrides import (Override, OverrideManager,
-                                    _override_ctx_stack, overrides)
+from flask_allows.overrides import (
+    Override,
+    OverrideManager,
+    _override_ctx_stack,
+    overrides,
+)
 from flask_allows.requirements import Requirement
 
 
@@ -82,7 +86,6 @@ class TestOverrideManager(object):
         assert some_requirement in overrides
 
     def test_manager_throws_if_different_context_popped(self):
-        assert _override_ctx_stack.top is None
         manager = OverrideManager()
         manager.push(Override())
         manager2 = OverrideManager()
@@ -90,9 +93,50 @@ class TestOverrideManager(object):
         with pytest.raises(RuntimeError) as excinfo:
             manager2.pop()
 
-        assert 'popped wrong override context' in str(excinfo.value)
+        assert "popped wrong override context" in str(excinfo.value)
 
-    @pytest.mark.fixture(autouse=True)
+    def test_popping_unpopulated_override_errors(self):
+        manager = OverrideManager()
+
+        with pytest.raises(RuntimeError) as excinfo:
+            manager.pop()
+
+        assert "popped wrong override context" in str(excinfo.value)
+
+    def test_override_context_manager(self):
+        manager = OverrideManager()
+        o = Override()
+
+        with manager.override(o):
+            assert _override_ctx_stack.top[1] is o
+
+        assert _override_ctx_stack.top is None
+
+    def test_override_with_use_parent_combines_both(self):
+        manager = OverrideManager()
+
+        def parent_requirement(user):
+            return True
+
+        def child_requirement(user):
+            return True
+
+        parent = Override(parent_requirement)
+        child = Override(child_requirement)
+
+        expected = Override(parent_requirement, child_requirement)
+
+        with manager.override(parent):
+            with manager.override(child, use_parent=True):
+                assert expected == manager.current
+
+    @pytest.fixture(autouse=True)
+    def assert_context_is_empty(self):
+        assert _override_ctx_stack.top is None
+        yield
+
+    @pytest.fixture(autouse=True)
     def pop_til_you_stop(self):
+        yield
         while _override_ctx_stack.top is not None:
             _override_ctx_stack.pop()
