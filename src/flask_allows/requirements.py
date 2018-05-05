@@ -185,7 +185,7 @@ def wants_request(f):
     This decorator is intended only to assist during a transitionary phase
     and will be removed in flask-allows 1.0
 
-    See: justanr/flask-allows #20 and justanr/flask-allows #27
+    See: :issue:`20,27`
     """
 
     @wraps(f)

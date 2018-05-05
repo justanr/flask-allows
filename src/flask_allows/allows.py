@@ -164,6 +164,18 @@ class Allows(object):
         this method will invoke on_fail and/or throw the appropriate exception
         type. Can be passed arguments to call on_fail with via f_args (which are
         passed positionally) and f_kwargs (which are passed as keyword).
+
+        :param requirements: The requirements to check
+        :param identity: Optional. A specific identity to use for the check
+        :param throws: Optional. A specific exception to throw for this check
+        :param on_fail: Optional. A callback to invoke after failure,
+            alternatively a value to return when failure happens
+        :param f_args: Positional arguments to pass to the on_fail callback
+        :param f_kwargs: Keyword arguments to pass to the on_fail callback
+        :param use_on_fail_return: Boolean (default True) flag to determine
+            if the return value should be used. If true, the return value
+            will be considered, else failure will always progress to
+            exception raising.
         """
 
         throws = throws or self.throws

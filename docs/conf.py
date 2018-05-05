@@ -44,8 +44,12 @@ autoclass_style = 'both'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
-    'sphinx.ext.autosectionlabel'
+    'sphinx.ext.autosectionlabel',
+    'sphinx_issues',
 ]
+
+
+issues_github_path = 'justanr/flask-allows'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

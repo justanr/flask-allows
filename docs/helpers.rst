@@ -20,12 +20,12 @@ and optionally any combination of:
 
 - ``on_fail`` callback
 - An exception type or instance with ``throws``
-- A specific identity to check against
+- A specific identity to check against with ``identity``
 
 .. note::
 
-    Constructing a ``Permission`` object requires an application context as it
-    gathers defaults from the configured Allows extension at construction time.
+    Using ``Permission`` as a boolean or as a context manager requires
+    an active application context.
 
 Once configured, the Permission object can be used as if it were a boolean::
 
