@@ -23,6 +23,11 @@ class Permission(object):
             print("Welcome to the club!")
 
 
+    .. note::
+
+        Both the context manager and boolean usages require an active
+        application context to use.
+
     :param requirements: The requirements to check against
     :param throws: Optional, keyword only. Exception to throw when used as a context manager,
         if provided it takes precedence over the exception stored on the current
