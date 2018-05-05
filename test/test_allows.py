@@ -1,9 +1,8 @@
 import pytest
 from flask import Response
-from werkzeug.exceptions import Forbidden
-
 from flask_allows import Allows
-from flask_allows.overrides import current_overrides
+from flask_allows.overrides import Override, current_overrides
+from werkzeug.exceptions import Forbidden
 
 
 def test_warns_about_request_deprecation_with_old_style_requirement(member):
@@ -172,6 +171,16 @@ def test_allows_can_call_requirements_with_old_and_new_style_arguments(member):
         return True
 
     assert allows.fulfill([new_style, old_style])
+
+
+def test_fulfills_skips_overridden_requirements(member, never):
+    allows = Allows(identity_loader=lambda: member)
+    allows.overrides.push(Override(never))
+
+    assert allows.fulfill([never])
+
+    # be a good test denizen and cleanup
+    allows.overrides.pop()
 
 
 def test_allows_cleans_up_override_contexts_in_after_request(app, member, never):
