@@ -5,12 +5,14 @@ Version 0.6 (2018-05-xx)
 ------------------------
 
 * ``Permission`` no longer needs an application context for construction
-    but does require one for evaluation now.
+  but does require one for evaluation now.
 * Added ``Allows.run`` a public helper that performs the complete fulfill and
   fail cycle. This cleans up the duplication between ``Allows.requires``,
   ``requires`` and ``Permission.__enter__``
 * Removed ``Permission.throw_type``
 * Removed ``PermissionedView``, ``PermissionedMethodView``
+* Added ability to disable requirements already registered on routes and inside
+  handlers via the ``flask_allows.overrides.OverrideManager`` class
 
 
 

@@ -1,4 +1,4 @@
-.. _helpers:
+.. _allows_helpers:
 
 
 #######
