@@ -36,7 +36,36 @@ class Additional(object):
 
     Requirements can be added by passing them into the constructor or
     by calling the ``add`` method. They can be removed from this object
-    by calling the ``remove`` method.
+    by calling the ``remove`` method. To check if a requirement has been added
+    to the current conext, you may call ``is_added`` or use ``in``::
+
+        some_req in additional
+        additional.is_added(some)req)
+
+    Additional objects can be iterated and length checked::
+
+        additional = Additional(some_req)
+        assert len(additional) == 1
+        assert list(additional) == [some_req]
+
+    Additional objects may be combined and compared to each other with the following
+    operators:
+
+    ``+`` creates a new additional object by combining two others, the new
+    additional supplies all requirements that both parents did.
+
+    ``+=`` similar to ``+`` except it is an inplace update.
+
+    ``-`` creates a new additional instance by removing any requirements from
+    the first instance that are contained in the second instance.
+
+    ``-=`` similar to ``-`` except it is an inplace update.
+
+    ``==`` compares two additional instances and returns true if both have
+    the same added requirements.
+
+    ``!=`` similar to ``!=`` except returns true if both have different
+    requirements contained in them.
     """
 
     def __init__(self, *requirements):
