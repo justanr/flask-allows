@@ -1,3 +1,4 @@
+from .additional import Additional, AdditionalManager, current_additions
 from .allows import Allows, allows
 from .overrides import Override, OverrideManager, current_overrides
 from .permission import Permission
@@ -13,16 +14,19 @@ from .requirements import (
 from .views import requires
 
 __all__ = (
+    "Additional",
+    "AdditionalManager",
     "allows",
     "Allows",
     "And",
     "C",
     "ConditionalRequirement",
+    "current_additions",
+    "current_overrides",
     "Not",
     "Or",
     "Override",
     "OverrideManager",
-    "current_overrides",
     "Permission",
     "Permission",
     "Requirement",

@@ -1,11 +1,13 @@
 import warnings
 from functools import wraps
+from itertools import chain
 
 from flask import current_app, request
 from werkzeug import LocalProxy
 from werkzeug.datastructures import ImmutableDict
 from werkzeug.exceptions import Forbidden
 
+from .additional import Additional, AdditionalManager
 from .overrides import Override, OverrideManager
 
 
@@ -30,6 +32,7 @@ class Allows(object):
 
         self.on_fail = _make_callable(on_fail)
         self.overrides = OverrideManager()
+        self.additional = AdditionalManager()
 
         if app:
             self.init_app(app)
@@ -45,10 +48,12 @@ class Allows(object):
         @app.before_request
         def start_context(*a, **k):
             self.overrides.push(Override())
+            self.additional.push(Additional())
 
         @app.after_request
         def cleanup(*a, **k):
             self.clear_all_overrides()
+            self.clear_all_additional()
 
     def requires(self, *requirements, **opts):
         """
@@ -120,19 +125,32 @@ class Allows(object):
         Checks that the provided or current identity meets each requirement
         passed to this method.
 
+        This method takes into account both additional and overridden
+        requirements, with overridden requirements taking precedence::
+
+            allows.additional.push(Additional(Has('foo')))
+            allows.overrides.push(Override(Has('foo')))
+
+            allows.fulfill([], user_without_foo)  # return True
+
         :param requirements: The requirements to check the identity against.
         :param identity: Optional. Identity to use in place of the current
             identity.
         """
         identity = identity or self._identity_loader()
 
+        if self.additional.current:
+            all_requirements = chain(iter(self.additional.current), requirements)
+        else:
+            all_requirements = iter(requirements)
+
         if self.overrides.current is not None:
-            requirements = (
-                r for r in requirements if r not in self.overrides.current
+            all_requirements = (
+                r for r in all_requirements if r not in self.overrides.current
             )
 
         return all(
-            _call_requirement(r, identity, request) for r in requirements
+            _call_requirement(r, identity, request) for r in all_requirements
         )
 
     def clear_all_overrides(self):
@@ -149,6 +167,20 @@ class Allows(object):
         while self.overrides.current is not None:
             self.overrides.pop()
 
+    def clear_all_additional(self):
+        """
+        Helper method to remove all additional contexts, this is called
+        automatically during the after request phase in Flask. However it is
+        provided here if additional contexts need to be cleared independent of
+        the request cycle.
+
+        If an additional context is found that originated from an
+        AdditionalManager instance not controlled by the Allows object, a
+        ``RuntimeError`` will be raised.
+        """
+        while self.additional.current is not None:
+            self.additional.pop()
+
     def run(
         self,
         requirements,
@@ -157,7 +189,7 @@ class Allows(object):
         on_fail=None,
         f_args=(),
         f_kwargs=ImmutableDict(),
-        use_on_fail_return=True
+        use_on_fail_return=True,
     ):
         """
         Used to preform a full run of the requirements and the options given,
@@ -179,7 +211,9 @@ class Allows(object):
         """
 
         throws = throws or self.throws
-        on_fail = _make_callable(on_fail) if on_fail is not None else self.on_fail
+        on_fail = _make_callable(
+            on_fail
+        ) if on_fail is not None else self.on_fail
 
         if not self.fulfill(requirements, identity):
             result = on_fail(*f_args, **f_kwargs)

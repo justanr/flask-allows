@@ -13,6 +13,8 @@ Version 0.6 (2018-05-xx)
 * Removed ``PermissionedView``, ``PermissionedMethodView``
 * Added ability to disable requirements already registered on routes and inside
   handlers via the ``flask_allows.overrides.OverrideManager`` class
+* Added ability to add more requirements to be run during checks on routes
+  and other handlers via the ``flask_allows.additional.AdditionalManager`` class
 
 
 

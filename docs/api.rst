@@ -35,6 +35,13 @@ Override Management
     :members:
 
 
+.. autoclass:: flask_allows.additional.Additional
+    :members:
+
+.. autoclass:: flask_allows.additional.AdditionalManager
+    :members:
+
+
 Utilities
 =========
 

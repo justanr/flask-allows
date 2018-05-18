@@ -52,6 +52,9 @@ class Override(object):
 
     ``==`` compares two overrides and returns true if both have the same
     disabled requirements.
+
+    ``!=`` similar to ``==`` except returns true if both have different
+    disabled requirements.
     """
 
     def __init__(self, *requirements):
