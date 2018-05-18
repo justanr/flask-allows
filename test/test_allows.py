@@ -1,8 +1,10 @@
 import pytest
 from flask import Response
-from flask_allows import Allows
-from flask_allows.overrides import Override, current_overrides
 from werkzeug.exceptions import Forbidden
+
+from flask_allows import Allows
+from flask_allows.additional import Additional, current_additions
+from flask_allows.overrides import Override, current_overrides
 
 
 def test_warns_about_request_deprecation_with_old_style_requirement(member):
@@ -17,7 +19,9 @@ def test_warns_about_request_deprecation_with_old_style_requirement(member):
 
     assert len(w) == 1
     assert issubclass(w[0].category, DeprecationWarning)
-    assert "Passing request to requirements is now deprecated" in str(w[0].message)
+    assert "Passing request to requirements is now deprecated" in str(
+        w[0].message
+    )
 
 
 def test_Allows_defaults():
@@ -58,16 +62,19 @@ def test_Allows_identity_loader_func(member):
     def ident():
         return member
 
-    assert allows._identity_loader is ident and allows._identity_loader() is member
+    assert (
+        allows._identity_loader is ident
+        and allows._identity_loader() is member
+    )
 
 
-def test_Allows_fulfill_true(member, always, request):
+def test_Allows_fulfill_true(member, always):
     allows = Allows(identity_loader=lambda: member)
     assert allows.fulfill([always])
-    assert always.called_with == {"user": member, "request": request}
+    assert always.called_with == {"user": member}
 
 
-def test_Allows_fulfill_false(member, never, request):
+def test_Allows_fulfill_false(member, never):
     allows = Allows(identity_loader=lambda: member)
     assert not allows.fulfill([never])
 
@@ -151,7 +158,9 @@ def test_allows_on_fail_override_at_decoration(member, atleastmod):
 
 
 def test_allows_on_fail_returning_none_raises(member, atleastmod):
-    allows = Allows(on_fail=lambda *a, **k: None, identity_loader=lambda: member)
+    allows = Allows(
+        on_fail=lambda *a, **k: None, identity_loader=lambda: member
+    )
 
     @allows.requires(atleastmod)
     def stub():
@@ -183,7 +192,9 @@ def test_fulfills_skips_overridden_requirements(member, never):
     allows.overrides.pop()
 
 
-def test_allows_cleans_up_override_contexts_in_after_request(app, member, never):
+def test_allows_cleans_up_override_contexts_in_after_request(
+    app, member, never, always
+):
     allows = Allows(app, identity_loader=lambda: member)
 
     # need to route a request for this test so the whole before/after request
@@ -192,11 +203,13 @@ def test_allows_cleans_up_override_contexts_in_after_request(app, member, never)
     @app.route("/")
     def index():
         assert allows.overrides.current.is_overridden(never)
+        assert allows.additional.current.is_added(always)
         return Response("...")
 
     @app.before_request
     def disable_never(*a, **k):
         current_overrides.add(never)
+        current_additions.add(always)
 
     with app.test_request_context("/"):
         app.preprocess_request()
@@ -204,3 +217,30 @@ def test_allows_cleans_up_override_contexts_in_after_request(app, member, never)
         app.process_response(result)
 
     assert allows.overrides.current is None
+    assert allows.additional.current is None
+
+
+def test_fulfill_calls_additional_requirements(member, always):
+    allows = Allows(identity_loader=lambda: member)
+
+    allows.additional.push(Additional(always))
+
+    assert allows.fulfill([])
+    assert always.called
+
+
+def test_req_not_called_when_both_added_and_overridden(member, never):
+    allows = Allows(identity_loader=lambda: member)
+
+    allows.additional.push(Additional(never))
+    allows.overrides.push(Override(never))
+
+    assert allows.fulfill([])
+
+
+def test_req_called_once_even_if_added_multiple_times(member, counter):
+    allows = Allows(identity_loader=lambda: member)
+    allows.additional.push(Additional(counter, counter))
+
+    assert allows.fulfill([])
+    assert counter.count == 1
