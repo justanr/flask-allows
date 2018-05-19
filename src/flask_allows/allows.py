@@ -51,9 +51,10 @@ class Allows(object):
             self.additional.push(Additional())
 
         @app.after_request
-        def cleanup(*a, **k):
+        def cleanup(response):
             self.clear_all_overrides()
             self.clear_all_additional()
+            return response
 
     def requires(self, *requirements, **opts):
         """
