@@ -3,9 +3,9 @@ from functools import wraps
 from itertools import chain
 
 from flask import current_app, request
-from werkzeug import LocalProxy
 from werkzeug.datastructures import ImmutableDict
 from werkzeug.exceptions import Forbidden
+from werkzeug.local import LocalProxy
 
 from .additional import Additional, AdditionalManager
 from .overrides import Override, OverrideManager
@@ -141,7 +141,9 @@ class Allows(object):
         identity = identity or self._identity_loader()
 
         if self.additional.current:
-            all_requirements = chain(iter(self.additional.current), requirements)
+            all_requirements = chain(
+                iter(self.additional.current), requirements
+            )
         else:
             all_requirements = iter(requirements)
 

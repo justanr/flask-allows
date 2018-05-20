@@ -118,6 +118,17 @@ class Override(object):
     def __ne__(self, other):
         return not self == other
 
+    def __len__(self):
+        return len(self._requirements)
+
+    def __bool__(self):
+        return len(self) != 0
+
+    __nonzero__ = __bool__
+
+    def __repr__(self):
+        return "Override({!r})".format(self._requirements)
+
 
 class OverrideManager(object):
     """
@@ -151,7 +162,9 @@ class OverrideManager(object):
         rv = _override_ctx_stack.pop()
         if rv is None or rv[0] is not self:
             raise RuntimeError(
-                "popped wrong override context ({} instead of {})".format(rv, self)
+                "popped wrong override context ({} instead of {})".format(
+                    rv, self
+                )
             )
 
     @property
