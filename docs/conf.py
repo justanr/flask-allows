@@ -24,9 +24,9 @@ copyright = '2018, Alec Nikolas Reiter'
 author = 'Alec Nikolas Reiter'
 
 # The short X.Y version
-version = '0.5.1'
+version = '0.6.0.dev'
 # The full version, including alpha/beta/rc tags
-release = '0.5.1'
+release = '0.6.0.dev'
 
 
 # -- General configuration ---------------------------------------------------
