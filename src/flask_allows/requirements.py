@@ -119,7 +119,9 @@ class ConditionalRequirement(Requirement):
 
         # can't use is because is a proxy
         if current_overrides != None:  # noqa: E711
-            requirements = (r for r in requirements if r not in current_overrides)
+            requirements = (
+                r for r in requirements if r not in current_overrides
+            )
 
         for r in requirements:
             result = _call_requirement(r, user, request)
@@ -163,6 +165,18 @@ class ConditionalRequirement(Requirement):
         return "<{0} requirements={1!r}{2}>".format(
             self.__class__.__name__, self.requirements, additional
         )
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, ConditionalRequirement)
+            and self.op == other.op
+            and self.until == other.until
+            and self.negated == other.negated
+            and self.requirements == other.requirements
+        )
+
+    def __hash__(self):
+        return hash((self.requirements, self.op, self.until, self.negated))
 
 
 (C, And, Or, Not) = (

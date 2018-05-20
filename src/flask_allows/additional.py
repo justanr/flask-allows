@@ -124,6 +124,9 @@ class Additional(object):
 
     __nonzero__ = __bool__
 
+    def __repr__(self):
+        return "Additional({!r})".format(self._requirements)
+
 
 class AdditionalManager(object):
     """
