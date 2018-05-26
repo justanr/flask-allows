@@ -2,7 +2,7 @@
     :target: https://travis-ci.org/justanr/flask-allows
 
 .. image:: https://coveralls.io/repos/github/justanr/flask-allows/badge.svg?branch=master
-:target: https://coveralls.io/github/justanr/flask-allows?branch=master
+    :target: https://coveralls.io/github/justanr/flask-allows?branch=master
 
 
 
