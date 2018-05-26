@@ -15,7 +15,6 @@ if __name__ == "__main__":
         author_email="alecreiter@gmail.com",
         description="Impose authorization requirements on Flask routes",
         long_description=readme + "\n\n" + changelog,
-        long_description_content_type="text/x-rst",
         license="MIT",
         packages=find_packages("src", exclude=["test"]),
         package_dir={"": "src"},
