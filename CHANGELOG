@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-Version 0.6 (2018-05-xx)
+Version 0.6 (2018-05-26)
 ------------------------
 
 * ``Permission`` no longer needs an application context for construction
