@@ -1,7 +1,8 @@
+import json
 import operator
 
 import pytest
-from flask import Blueprint, Flask, g, request
+from flask import Blueprint, Flask, g, jsonify, request
 from flask.views import MethodView
 from flask_allows import (
     Additional,
@@ -272,10 +273,26 @@ def multi_index():
     return "hello"
 
 
+def view_args_to_resp(*a, **k):
+    return jsonify(k)
+
+
+has_view_args = Blueprint("test_integration_args", "args")
+has_view_args.before_request(
+    guard_blueprint([HasPermission("noone")], on_fail=view_args_to_resp)
+)
+
+
+@has_view_args.route("/<foo>/<bar>/")
+def has_view_args_index():
+    return ""
+
+
 app.register_blueprint(bp, url_prefix="/bp")
 app.register_blueprint(failure, url_prefix="/failure")
 app.register_blueprint(cbv, url_prefix="/cbv")
 app.register_blueprint(multi, url_prefix="/multi")
+app.register_blueprint(has_view_args, url_prefix="/args")
 
 
 @pytest.fixture
@@ -433,3 +450,9 @@ def test_multi_tiered_guard_triggers_separately(client):
     rv = client.get("/multi/", headers={"Authorization": "staff"})
     assert rv.status_code == 200
     assert b"hello" == rv.data
+
+
+def test_guard_blueprint_passes_view_args_to_on_fail(client):
+    rv = client.get("/args/foo/bar/")
+    data = json.loads(rv.data.decode("utf-8"))
+    assert data == {"foo": "foo", "bar": "bar"}

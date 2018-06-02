@@ -170,9 +170,9 @@ that will be treated as the result of the routing request::
     from flask import flash, redirect
 
     def flash_and_redirect(message, level, endpoint):
-        def _(*a, **k):
-           flash(message, level)
-           return redirect(endpoint)
+        def flasher(*a, **k):
+            flash(message, level)
+            return redirect(endpoint)
         return _
 
     admin_area.before_request(
@@ -185,6 +185,28 @@ that will be treated as the result of the routing request::
             )
         )
     )
+
+
+``guard_blueprint`` will pass ``flask.request.view_args`` as keyword arguments
+to the ``on_fail`` handler registered with it, this is useful is the blueprint
+is registered with a dynamic component such as a username::
+
+    def flash_formatted_message(message, level):
+        def flasher(*a, **k):
+            flash(message.format(**k), level)
+        return flasher
+
+    user_area = Blueprint(__name__, "users")
+    user_area.before_request(
+        guard_blueprint(
+            [MustBeLoggedIn()],
+            on_fail=flash_formatted_message(
+                "Must be logged in to view {}'s profile",
+                level="warning"
+            )
+        )
+    )
+
 
 If you need to exempt a route handler inside the blueprint from these
 permissions, that is possible as well by using

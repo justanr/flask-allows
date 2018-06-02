@@ -114,7 +114,7 @@ def guard_blueprint(requirements, identity=None, throws=None, on_fail=None):
         my_bp = Blueprint(__name__, 'namespace')
         my_bp.before_request(guard_blueprint(MustBeLoggedIn()))
 
-    `identity`, `on_fail` and `throws` may also be provided but are optional.
+    ``identity``, ``on_fail`` and ``throws`` may also be provided but are optional.
     If on_fails returns a non-None result, that will be considered the return
     value of the routing::
 
@@ -138,6 +138,9 @@ def guard_blueprint(requirements, identity=None, throws=None, on_fail=None):
                 )
             )
         )
+
+    ``on_fail`` will also receive anything found in
+    ``flask.request.view_args`` as keyword arguments.
 
     If needed, this guard may be applied multiple times. This may be useful
     if different conditions should result in different `on_fail` mechanisms
@@ -181,7 +184,11 @@ def guard_blueprint(requirements, identity=None, throws=None, on_fail=None):
 
         if not is_exempt:
             return allows.run(
-                requirements, identity=identity, on_fail=on_fail, throws=throws
+                requirements,
+                identity=identity,
+                on_fail=on_fail,
+                throws=throws,
+                f_kwargs=request.view_args,
             )
         return None
 
