@@ -144,3 +144,61 @@ To apply either of these decorators to class based views, there are two options:
         def post(self):
             return render_template('some_tempalte.html')
 
+
+**************************
+Guarding entire blueprints
+**************************
+
+If you find yourself applying the same set of requirements to every route in
+a blueprint, you can instead guard an entire blueprint with that set of
+requirements instead using :func:`~flask_allows.views.guard_blueprint`::
+
+
+    from flask import Blueprint
+    from flask_allows import guard_blueprint
+
+    from myapp.requirements import is_admin
+
+
+    admin_area = Blueprint(__name__, "admin_area")
+    admin_area.before_request(guard_blueprint([is_admin]))
+
+You may also specify what happens when the requirements aren't met by providing
+either of ``throws`` or ``on_fail``. If ``on_fails`` returns a non-None value,
+that will be treated as the result of the routing request::
+
+    from flask import flash, redirect
+
+    def flash_and_redirect(message, level, endpoint):
+        def _(*a, **k):
+           flash(message, level)
+           return redirect(endpoint)
+        return _
+
+    admin_area.before_request(
+        guard_blueprint(
+            [is_admin],
+            on_fail=flash_and_redirect(
+                message="Must be admin",
+                level="danger",
+                endpoint="index"
+            )
+        )
+    )
+
+If you need to exempt a route handler inside the blueprint from these
+permissions, that is possible as well by using
+:func:`~flask_allows.views.exempt_from_requirements`::
+
+    @admin_area.route('/unpermissioned')
+    @exempt_from_requirements
+    def index():
+        ...
+
+
+.. danger::
+
+    ``exempt_from_requirements`` only prevents ambient runners like
+    ``guard_blueprint`` from acting on the route handler. However, if
+    ``requires``, ``allows.requires`` or another runner acts on the route
+    then those requirements will be run.

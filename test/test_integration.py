@@ -1,7 +1,7 @@
 import operator
 
 import pytest
-from flask import Flask, g, request
+from flask import Blueprint, Flask, g, request
 from flask.views import MethodView
 from flask_allows import (
     Additional,
@@ -13,12 +13,14 @@ from flask_allows import (
     Override,
     Permission,
     Requirement,
+    exempt_from_requirements,
+    guard_blueprint,
     requires,
 )
 from flask_allows.additional import _additional_ctx_stack
 from flask_allows.overrides import _override_ctx_stack
 
-integration = pytest.mark.integration
+pytestmark = pytest.mark.integration
 
 # This is a whole bunch of setup for the integration tests
 # route registrations, user setup, etc
@@ -208,6 +210,74 @@ def misbehave():
     allows.additional.push(Additional())
 
 
+bp = Blueprint("test_integration_bp", "bp")
+bp.before_request(guard_blueprint([HasPermission("promote")]))
+
+
+@bp.route("/")
+def bp_index():
+    return "hello from permissioned endpoint"
+
+
+@bp.route("/exempt")
+@exempt_from_requirements
+def exempt():
+    return "hello from exempt endpoint"
+
+
+failure = Blueprint("test_integration_failure", "failure")
+failure.before_request(
+    guard_blueprint(
+        [HasPermission("promote")], on_fail=lambda **k: ("bp nope", 403)
+    )
+)
+
+
+@failure.route("/")
+def failure_index():
+    return None
+
+
+cbv = Blueprint("test_integration_cbv", "cbv")
+cbv.before_request(guard_blueprint([HasPermission("promote")]))
+
+
+class SomeCBV(MethodView):
+    decorators = [exempt_from_requirements]
+
+    def get(self):
+        return "hello"
+
+
+cbv.add_url_rule("/", view_func=SomeCBV.as_view(name="exempt"))
+
+
+multi = Blueprint("test_integration_multi", "multi")
+multi.before_request(
+    guard_blueprint(
+        [HasPermission("ban")],
+        on_fail=lambda *a, **k: ("must be able to ban", 403),
+    )
+)
+multi.before_request(
+    guard_blueprint(
+        [HasLevel(AuthLevels.staff)],
+        on_fail=lambda *a, **k: ("must be staff", 403),
+    )
+)
+
+
+@multi.route("/")
+def multi_index():
+    return "hello"
+
+
+app.register_blueprint(bp, url_prefix="/bp")
+app.register_blueprint(failure, url_prefix="/failure")
+app.register_blueprint(cbv, url_prefix="/cbv")
+app.register_blueprint(multi, url_prefix="/multi")
+
+
 @pytest.fixture
 def client():
     with app.test_client() as client:
@@ -217,21 +287,18 @@ def client():
 # THIS IS WHERE THE TESTS BEGIN
 
 
-@integration
 def test_blocks_guests_from_entering(client):
     rv = client.get("/", headers={"Authorization": "banned"})
     assert rv.data == b"nope"
     assert rv.status_code == 403
 
 
-@integration
 def test_must_have_view_to_access_items(client):
     rv = client.get("/items", headers={"Authorization": "banned"})
     assert rv.data == b"nope"
     assert rv.status_code == 403
 
 
-@integration
 @pytest.mark.parametrize("user", ["guest", "user", "admin", "staff"])
 def test_can_view_items(user, client):
     rv = client.get("/items", headers={"Authorization": user})
@@ -239,7 +306,6 @@ def test_can_view_items(user, client):
     assert rv.status_code == 200
 
 
-@integration
 @pytest.mark.parametrize("user", ["banned", "guest"])
 def test_must_have_reply_to_access_reply(user, client):
     rv = client.post("/items", headers={"Authorization": user})
@@ -247,7 +313,6 @@ def test_must_have_reply_to_access_reply(user, client):
     assert rv.status_code == 403
 
 
-@integration
 @pytest.mark.parametrize("user", ["user", "admin", "staff"])
 def test_can_post_item_reply(user, client):
     rv = client.post("/items", headers={"Authorization": user})
@@ -255,7 +320,6 @@ def test_can_post_item_reply(user, client):
     assert rv.status_code == 200
 
 
-@integration
 def test_can_post_reply_with_override(client):
     rv = client.post(
         "/items", headers={"Authorization": "guest", "Override": "reply"}
@@ -264,13 +328,11 @@ def test_can_post_reply_with_override(client):
     assert rv.status_code == 200
 
 
-@integration
 def test_recovers_from_endpoint_that_raises(client):
     rv = client.get("/raise")
     assert rv.status_code == 500
 
 
-@integration
 @pytest.mark.parametrize("user", ["admin", "staff"])
 def test_can_access_permissioned_endpoint(user, client):
     rv = client.get("/use-permission", headers={"Authorization": user})
@@ -278,7 +340,6 @@ def test_can_access_permissioned_endpoint(user, client):
     assert rv.data == b"thumbs up"
 
 
-@integration
 def test_can_access_permissioned_endpoint_with_override(client):
     rv = client.get(
         "/use-permission",
@@ -288,7 +349,6 @@ def test_can_access_permissioned_endpoint_with_override(client):
     assert rv.data == b"thumbs up"
 
 
-@integration
 # python2 dict.keys returns a list, python3 doesn't have views
 @pytest.mark.parametrize("user", set(users.keys()) - {"admin", "staff"})
 def test_cant_access_permissioned_endpoint(user, client):
@@ -296,7 +356,6 @@ def test_cant_access_permissioned_endpoint(user, client):
     assert rv.status_code == 403
 
 
-@integration
 def test_odd_permission(client):
     # has neither, xor should be false
     rv = client.get("/odd-perm", headers={"Authorization": "guest"})
@@ -317,10 +376,60 @@ def test_odd_permission(client):
     assert rv.status_code == 200
 
 
-@integration
 def test_cleans_up_lingering_contexts(client):
     # endpoint pushes its own contexts but doesn't clean them up
     # asserts the extension object does clean them up
     client.get("/misbehave")
     assert not allows.additional.current
     assert not allows.overrides.current
+
+
+def test_exempts_from_blueprint_requirements(client):
+    rv = client.get("/bp/exempt", headers={"Authorization": "guest"})
+    assert rv.status_code == 200
+
+
+@pytest.mark.parametrize("user", ["guest", "user", "admin"])
+def test_blocks_unpermissioned_from_accessing_blueprint(user, client):
+    rv = client.get("/bp/", headers={"Authorization": user})
+    assert rv.status_code == 403
+
+
+def test_allows_user_to_access_blueprint(client):
+    rv = client.get("/bp/", headers={"Authorization": "staff"})
+    assert rv.status_code == 200
+    assert b"permissioned" in rv.data
+
+
+@pytest.mark.parametrize("user", ["guest", "user", "admin"])
+def test_override_works_with_permission_blueprint(user, client):
+    rv = client.get(
+        "/bp/", headers={"Authorization": user, "Override": "promote"}
+    )
+    assert rv.status_code == 200
+    assert b"permissioned" in rv.data
+
+
+def test_blueprint_guard_can_return_early_response(client):
+    rv = client.get("/failure/", headers={"Authorization": "user"})
+    assert rv.status_code == 403
+    assert b"bp nope" in rv.data
+
+
+def test_exempts_cbv_when_class_decorated(client):
+    rv = client.get("/cbv/", headers={"Authorization": "user"})
+    assert rv.status_code == 200
+
+
+def test_multi_tiered_guard_triggers_separately(client):
+    rv = client.get("/multi/", headers={"Authorization": "user"})
+    assert rv.status_code == 403
+    assert b"ban" in rv.data
+
+    rv = client.get("/multi/", headers={"Authorization": "admin"})
+    assert rv.status_code == 403
+    assert b"staff" in rv.data
+
+    rv = client.get("/multi/", headers={"Authorization": "staff"})
+    assert rv.status_code == 200
+    assert b"hello" == rv.data
