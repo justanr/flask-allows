@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+Version 0.7 (2018-XX-XX)
+------------------------
+
+* Added ``flask_allows.view.guard_blueprint`` and
+  ``flask_allows.views.exempt_from_requirements`` to make protecting entire
+  blueprints easier.
+
+
 Version 0.6 (2018-05-26)
 ------------------------
 

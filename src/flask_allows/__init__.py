@@ -11,7 +11,7 @@ from .requirements import (
     Requirement,
     wants_request,
 )
-from .views import requires
+from .views import exempt_from_requirements, guard_blueprint, requires
 
 __all__ = (
     "Additional",
@@ -22,6 +22,8 @@ __all__ = (
     "C",
     "ConditionalRequirement",
     "current_additions",
+    "exempt_from_requirements",
+    "guard_blueprint",
     "current_overrides",
     "Not",
     "Or",
