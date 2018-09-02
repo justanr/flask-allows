@@ -18,7 +18,6 @@ def some_other_requirement(user):
 
 
 class AClassRequirement(Requirement):
-
     def __init__(self, the_value):
         self.the_value = the_value
 
@@ -29,13 +28,12 @@ class AClassRequirement(Requirement):
         return hash(self.the_value)
 
     def __eq__(self, other):
-        return isinstance(
-            other, AClassRequirement
-        ) and self.the_value == other.the_value
+        return (
+            isinstance(other, AClassRequirement) and self.the_value == other.the_value
+        )
 
 
 class TestCurrentAdditional(object):
-
     def test_current_additions_with_no_context_returns_None(self):
         assert current_additions == None  # noqa: E711
 
@@ -49,9 +47,7 @@ class TestCurrentAdditional(object):
 
         manager.pop()
 
-    def test_current_additions_points_towards_temporary_context(
-        self, never, always
-    ):
+    def test_current_additions_points_towards_temporary_context(self, never, always):
         manager = AdditionalManager()
         manager.push(Additional(never))
 
@@ -64,7 +60,6 @@ class TestCurrentAdditional(object):
 
 
 class TestAdditional(object):
-
     def test_shows_if_requirement_is_added(self):
         additional = Additional(some_requirement)
         assert additional.is_added(some_requirement)
@@ -108,7 +103,6 @@ class TestAdditional(object):
 
 
 class TestAdditionalManager(object):
-
     def test_additional_manager_populates_additionals_local(self):
         manager = AdditionalManager()
         additional = Additional(some_requirement)

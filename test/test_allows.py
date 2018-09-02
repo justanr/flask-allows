@@ -19,9 +19,7 @@ def test_warns_about_request_deprecation_with_old_style_requirement(member):
 
     assert len(w) == 1
     assert issubclass(w[0].category, DeprecationWarning)
-    assert "Passing request to requirements is now deprecated" in str(
-        w[0].message
-    )
+    assert "Passing request to requirements is now deprecated" in str(w[0].message)
 
 
 def test_Allows_defaults():
@@ -62,10 +60,7 @@ def test_Allows_identity_loader_func(member):
     def ident():
         return member
 
-    assert (
-        allows._identity_loader is ident
-        and allows._identity_loader() is member
-    )
+    assert allows._identity_loader is ident and allows._identity_loader() is member
 
 
 def test_Allows_fulfill_true(member, always):
@@ -109,7 +104,6 @@ def test_allows_requires_throws(member, atleastmod):
 
 
 def test_allows_requires_throws_override(member, atleastmod):
-
     class MyForbid(Forbidden):
         pass
 
@@ -158,9 +152,7 @@ def test_allows_on_fail_override_at_decoration(member, atleastmod):
 
 
 def test_allows_on_fail_returning_none_raises(member, atleastmod):
-    allows = Allows(
-        on_fail=lambda *a, **k: None, identity_loader=lambda: member
-    )
+    allows = Allows(on_fail=lambda *a, **k: None, identity_loader=lambda: member)
 
     @allows.requires(atleastmod)
     def stub():

@@ -17,7 +17,6 @@ class AuthLevels:
 
 
 class SpyRequirement(Requirement):
-
     def __init__(self):
         self.called = False
         self.called_with = {}
@@ -28,21 +27,18 @@ class SpyRequirement(Requirement):
 
 
 class AlwaysRequirement(SpyRequirement):
-
     def fulfill(self, user):
         super(AlwaysRequirement, self).fulfill(user)
         return True
 
 
 class NeverRequirement(SpyRequirement):
-
     def fulfill(self, user):
         super(NeverRequirement, self).fulfill(user)
         return False
 
 
 class CountingRequirement(AlwaysRequirement):
-
     def __init__(self):
         super(CountingRequirement, self).__init__()
         self.count = 0

@@ -1,5 +1,3 @@
 -rrequirements.txt
 -rrequirements-cov.txt
-flake8==3.5.0
 pytest==3.5.0
-pytest-flake8==1.0.0

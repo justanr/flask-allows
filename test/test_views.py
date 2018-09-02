@@ -1,7 +1,8 @@
 import pytest
 from flask.views import MethodView, View
-from flask_allows import Allows, requires
 from werkzeug.exceptions import Forbidden
+
+from flask_allows import Allows, requires
 
 
 def test_requires_allows(app, member, ismember):
@@ -35,20 +36,20 @@ def test_requires_works_as_cbv_decorator(app, ismember, guest):
 
     with pytest.raises(Forbidden):
         with app.app_context():
-            IsMemberView.as_view('memberonly')()
+            IsMemberView.as_view("memberonly")()
 
 
 def test_requires_works_as_method_decorator(app, ismember, guest):
     class MembersCanPost(MethodView):
         @requires(ismember)
         def post(self):
-            return 'hello'
+            return "hello"
 
     Allows(app=app, identity_loader=lambda: guest)
-    context = app.test_request_context('/', method='POST')
+    context = app.test_request_context("/", method="POST")
 
     with pytest.raises(Forbidden), app.app_context(), context:
-        MembersCanPost.as_view('memberonly')()
+        MembersCanPost.as_view("memberonly")()
 
 
 def test_requires_on_fail_local_override(app, ismember, guest):

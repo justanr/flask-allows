@@ -1,6 +1,7 @@
 import operator
 
 import pytest
+
 from flask_allows.allows import Allows
 from flask_allows.overrides import Override, OverrideManager
 from flask_allows.requirements import (
@@ -29,9 +30,11 @@ def test_call_fulfills_with_call(spy):
 def test_ConditionalRequirement_defaults(always):
     Cond = ConditionalRequirement(always)
 
-    assert (
-        (Cond.requirements, Cond.op, Cond.until, Cond.negated)
-        == ((always,), operator.and_, None, None)
+    assert (Cond.requirements, Cond.op, Cond.until, Cond.negated) == (
+        (always,),
+        operator.and_,
+        None,
+        None,
     )
 
 
@@ -44,36 +47,44 @@ def test_custom_ConditionalRequirement(always):
     Cond = ConditionalRequirement(
         always, always, op=operator.xor, negated=True, until=False
     )
-    assert (
-        (Cond.requirements, Cond.op, Cond.until, Cond.negated)
-        == ((always, always), operator.xor, False, True)
+    assert (Cond.requirements, Cond.op, Cond.until, Cond.negated) == (
+        (always, always),
+        operator.xor,
+        False,
+        True,
     )
 
 
 def test_AndConditional_defaults(always):
     Cond = And(always)
 
-    assert (
-        (Cond.requirements, Cond.op, Cond.until, Cond.negated)
-        == ((always,), operator.and_, False, None)
+    assert (Cond.requirements, Cond.op, Cond.until, Cond.negated) == (
+        (always,),
+        operator.and_,
+        False,
+        None,
     )
 
 
 def test_OrConditional_defaults(always):
     Cond = Or(always)
 
-    assert (
-        (Cond.requirements, Cond.op, Cond.until, Cond.negated)
-        == ((always,), operator.or_, True, None)
+    assert (Cond.requirements, Cond.op, Cond.until, Cond.negated) == (
+        (always,),
+        operator.or_,
+        True,
+        None,
     )
 
 
 def test_NotConditional_defaults(always):
     Cond = Not(always)
 
-    assert (
-        (Cond.requirements, Cond.op, Cond.until, Cond.negated)
-        == ((always,), operator.and_, None, True)
+    assert (Cond.requirements, Cond.op, Cond.until, Cond.negated) == (
+        (always,),
+        operator.and_,
+        None,
+        True,
     )
 
 
@@ -92,9 +103,11 @@ def test_OrConditional_fulfills(always, never, member, request):
 def test_OrConditional_shortcut(always):
     A = C(always)
     Cond = A | A
-    assert (
-        (Cond.requirements, Cond.op, Cond.until, Cond.negated)
-        == ((A, A), operator.or_, True, None)
+    assert (Cond.requirements, Cond.op, Cond.until, Cond.negated) == (
+        (A, A),
+        operator.or_,
+        True,
+        None,
     )
 
 
@@ -113,9 +126,11 @@ def test_AndConditional_fulfills(always, never, member, request):
 def test_AndConditional_shortcut(always):
     A = C(always)
     Cond = A & A
-    assert (
-        (Cond.requirements, Cond.op, Cond.until, Cond.negated)
-        == ((A, A), operator.and_, False, None)
+    assert (Cond.requirements, Cond.op, Cond.until, Cond.negated) == (
+        (A, A),
+        operator.and_,
+        False,
+        None,
     )
 
 
@@ -123,9 +138,11 @@ def test_NotConditional_shortcut(always):
     A = C(always)
     Cond = ~A
 
-    assert (
-        (Cond.requirements, Cond.op, Cond.until, Cond.negated)
-        == ((A,), operator.and_, None, True)
+    assert (Cond.requirements, Cond.op, Cond.until, Cond.negated) == (
+        (A,),
+        operator.and_,
+        None,
+        True,
     )
 
 
@@ -150,9 +167,7 @@ def test_NotConditional_many_mixed(always, never, member, request):
 
 
 def test_supports_new_style_requirements(member, request):
-
     class SomeRequirement(Requirement):
-
         def fulfill(self, user):
             return True
 
@@ -160,7 +175,6 @@ def test_supports_new_style_requirements(member, request):
 
 
 def test_ConditionalRequirement_supports_new_style_requirements(member, request):
-
     def is_true(user):
         return True
 

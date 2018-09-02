@@ -4,9 +4,18 @@ from flask import current_app, request
 
 from .allows import allows
 
+__all__ = ("requires", "exempt_from_requirements", "guard_entire")
+
 
 def _get_executing_handler():
     return current_app.view_functions[request.endpoint]
+
+
+def _should_run_requirements():
+    if request.routing_exception is not None:
+        return False
+
+    return not getattr(_get_executing_handler(), "__allows_exempt__", False)
 
 
 def requires(*requirements, **opts):
@@ -35,7 +44,6 @@ def requires(*requirements, **opts):
     throws = opts.get("throws")
 
     def decorator(f):
-
         @wraps(f)
         def allower(*args, **kwargs):
 
@@ -96,13 +104,15 @@ def exempt_from_requirements(f):
 
 
     :param f: The route handler to be decorated.
+
+    .. versionadded:: 0.7.0
     """
 
     f.__allows_exempt__ = True
     return f
 
 
-def guard_blueprint(requirements, identity=None, throws=None, on_fail=None):
+def guard_entire(requirements, identity=None, throws=None, on_fail=None):
     """
     Used to protect an entire blueprint with a set of requirements. If a route
     handler inside the blueprint should be exempt, then it may be decorated
@@ -112,7 +122,7 @@ def guard_blueprint(requirements, identity=None, throws=None, on_fail=None):
     blueprint and provided with the requirements to guard the blueprint with::
 
         my_bp = Blueprint(__name__, 'namespace')
-        my_bp.before_request(guard_blueprint(MustBeLoggedIn()))
+        my_bp.before_request(guard_entire(MustBeLoggedIn()))
 
     ``identity``, ``on_fail`` and ``throws`` may also be provided but are optional.
     If on_fails returns a non-None result, that will be considered the return
@@ -129,7 +139,7 @@ def guard_blueprint(requirements, identity=None, throws=None, on_fail=None):
 
         bp = Blueprint(__name__, 'namespace')
         bp.before_request(
-            guard_blueprint(
+            guard_entire(
                 [MustBeLoggedIn()],
                 on_fail=flash_and_redirect(
                     "Please login in first",
@@ -148,7 +158,7 @@ def guard_blueprint(requirements, identity=None, throws=None, on_fail=None):
 
         bp = Blueprint(__name__, "admin_panel")
         bp.before_request(
-            guard_blueprint(
+            guard_entire(
                 [MustBeLoggedIn()],
                 on_fail=flash_and_redirect(
                     "Please login in first",
@@ -158,7 +168,7 @@ def guard_blueprint(requirements, identity=None, throws=None, on_fail=None):
             )
         )
         bp.before_request(
-            guard_blueprint(
+            guard_entire(
                 [MustBeAdmin()],
                 on_fail=flash_and_redirect(
                     "You are not an admin.",
@@ -175,14 +185,12 @@ def guard_blueprint(requirements, identity=None, throws=None, on_fail=None):
     :param throws: Optional. Exception or exception type to be thrown if
         authorization fails.
     :param on_fail: Optional. Value or function to use if authorization fails.
+
+    .. versionadded: 0.7.0
     """
 
     def guarder():
-        is_exempt = getattr(
-            _get_executing_handler(), "__allows_exempt__", False
-        )
-
-        if not is_exempt:
+        if _should_run_requirements():
             return allows.run(
                 requirements,
                 identity=identity,

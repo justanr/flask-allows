@@ -5,6 +5,8 @@ from werkzeug.local import LocalProxy, LocalStack
 
 _additional_ctx_stack = LocalStack()
 
+__all__ = ("current_additions", "Additional", "AdditionalManager")
+
 
 @LocalProxy
 def current_additions():
@@ -18,7 +20,6 @@ def current_additions():
 
 
 def _isinstance(f):
-
     @wraps(f)
     def check(self, other):
         if not isinstance(other, Additional):
@@ -160,9 +161,7 @@ class AdditionalManager(object):
         rv = _additional_ctx_stack.pop()
         if rv is None or rv[0] is not self:
             raise RuntimeError(
-                "popped wrong additional context ({} instead of {})".format(
-                    rv, self
-                )
+                "popped wrong additional context ({} instead of {})".format(rv, self)
             )
 
     @property

@@ -5,6 +5,8 @@ from werkzeug.local import LocalProxy, LocalStack
 
 _override_ctx_stack = LocalStack()
 
+__all__ = ("current_overrides", "Override", "OverrideManager")
+
 
 @LocalProxy
 def current_overrides():
@@ -18,7 +20,6 @@ def current_overrides():
 
 
 def _isinstance(f):
-
     @wraps(f)
     def check(self, other):
         if not isinstance(other, Override):
@@ -162,9 +163,7 @@ class OverrideManager(object):
         rv = _override_ctx_stack.pop()
         if rv is None or rv[0] is not self:
             raise RuntimeError(
-                "popped wrong override context ({} instead of {})".format(
-                    rv, self
-                )
+                "popped wrong override context ({} instead of {})".format(rv, self)
             )
 
     @property

@@ -5,6 +5,17 @@ python:
 - '3.4'
 - '3.5'
 - '3.6'
+matrix:
+  include:
+    - python: 3.6
+      env: TOXENV=flake8
+    - python: 3.6
+      env: TOXENV=black
+    # see the following issue on why 3.7 is weirdo
+    # https://github.com/travis-ci/travis-ci/issues/9815
+    - python: 3.7
+      dist: xenial
+      sudo: true
 install:
 - pip install -r requirements-travis.txt
 script:
@@ -21,5 +32,5 @@ deploy:
   on:
     tags: true
     repo: justanr/flask-allows
-    python: '3.6'
+    python: '3.7'
     branch: master

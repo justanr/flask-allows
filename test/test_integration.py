@@ -4,6 +4,7 @@ import operator
 import pytest
 from flask import Blueprint, Flask, g, jsonify, request
 from flask.views import MethodView
+
 from flask_allows import (
     Additional,
     Allows,
@@ -15,7 +16,7 @@ from flask_allows import (
     Permission,
     Requirement,
     exempt_from_requirements,
-    guard_blueprint,
+    guard_entire,
     requires,
 )
 from flask_allows.additional import _additional_ctx_stack
@@ -30,7 +31,6 @@ pytestmark = pytest.mark.integration
 
 
 class User(object):
-
     def __init__(self, username, userlevel, *permissions):
         self.username = username
         self.permissions = frozenset(permissions)
@@ -58,9 +58,7 @@ users = {
     "guest": User("George", AuthLevels.guest, "view"),
     "user": User("Ulric", AuthLevels.user, "view", "reply"),
     "admin": User("Adam", AuthLevels.admin, "view", "reply", "edit", "ban"),
-    "staff": User(
-        "Seth", AuthLevels.staff, "view", "reply", "edit", "ban", "promote"
-    ),
+    "staff": User("Seth", AuthLevels.staff, "view", "reply", "edit", "ban", "promote"),
 }
 
 
@@ -82,9 +80,7 @@ def ensure_empty_stacks(resp=None):
 
 
 allows = Allows(
-    app=app,
-    identity_loader=lambda: g.user,
-    on_fail=lambda *a, **k: ("nope", 403),
+    app=app, identity_loader=lambda: g.user, on_fail=lambda *a, **k: ("nope", 403)
 )
 
 
@@ -108,7 +104,6 @@ def add_override():
 
 
 class HasPermission(Requirement):
-
     def __init__(self, name):
         self.name = name
 
@@ -126,7 +121,6 @@ class HasPermission(Requirement):
 
 
 class HasLevel(Requirement):
-
     def __init__(self, userlevel):
         self.userlevel = userlevel
 
@@ -137,9 +131,7 @@ class HasLevel(Requirement):
         return hash(self.userlevel)
 
     def __eq__(self, other):
-        return isinstance(
-            other, HasLevel
-        ) and self.userlevel == other.userlevel
+        return isinstance(other, HasLevel) and self.userlevel == other.userlevel
 
     def __repr__(self):
         return "HasLevel({})".format(self.userlevel)
@@ -212,7 +204,7 @@ def misbehave():
 
 
 bp = Blueprint("test_integration_bp", "bp")
-bp.before_request(guard_blueprint([HasPermission("promote")]))
+bp.before_request(guard_entire([HasPermission("promote")]))
 
 
 @bp.route("/")
@@ -228,9 +220,7 @@ def exempt():
 
 failure = Blueprint("test_integration_failure", "failure")
 failure.before_request(
-    guard_blueprint(
-        [HasPermission("promote")], on_fail=lambda **k: ("bp nope", 403)
-    )
+    guard_entire([HasPermission("promote")], on_fail=lambda **k: ("bp nope", 403))
 )
 
 
@@ -240,7 +230,7 @@ def failure_index():
 
 
 cbv = Blueprint("test_integration_cbv", "cbv")
-cbv.before_request(guard_blueprint([HasPermission("promote")]))
+cbv.before_request(guard_entire([HasPermission("promote")]))
 
 
 class SomeCBV(MethodView):
@@ -255,15 +245,13 @@ cbv.add_url_rule("/", view_func=SomeCBV.as_view(name="exempt"))
 
 multi = Blueprint("test_integration_multi", "multi")
 multi.before_request(
-    guard_blueprint(
-        [HasPermission("ban")],
-        on_fail=lambda *a, **k: ("must be able to ban", 403),
+    guard_entire(
+        [HasPermission("ban")], on_fail=lambda *a, **k: ("must be able to ban", 403)
     )
 )
 multi.before_request(
-    guard_blueprint(
-        [HasLevel(AuthLevels.staff)],
-        on_fail=lambda *a, **k: ("must be staff", 403),
+    guard_entire(
+        [HasLevel(AuthLevels.staff)], on_fail=lambda *a, **k: ("must be staff", 403)
     )
 )
 
@@ -279,7 +267,7 @@ def view_args_to_resp(*a, **k):
 
 has_view_args = Blueprint("test_integration_args", "args")
 has_view_args.before_request(
-    guard_blueprint([HasPermission("noone")], on_fail=view_args_to_resp)
+    guard_entire([HasPermission("noone")], on_fail=view_args_to_resp)
 )
 
 
@@ -295,9 +283,52 @@ app.register_blueprint(multi, url_prefix="/multi")
 app.register_blueprint(has_view_args, url_prefix="/args")
 
 
+guarded_app = Flask(__name__)
+guarded_app.testing = False
+guarded_app.debug = False
+
+
+all_app_allows = Allows(
+    app=guarded_app,
+    identity_loader=lambda: g.user,
+    on_fail=lambda *a, **k: ("nope", 403),
+)
+
+
+@guarded_app.before_request
+def guarded_app_load_user():
+    username = request.headers.get("Authorization")
+    user = users.get(username, users["guest"])
+    g.user = user
+
+
+guarded_app.before_request(
+    guard_entire(
+        [HasLevel(AuthLevels.staff)], on_fail=lambda *a, **k: ("must be staff", 403)
+    )
+)
+
+
+@guarded_app.route("/")
+@exempt_from_requirements
+def unguarded_index():
+    return "welcome", 200
+
+
+@guarded_app.route("/staff")
+def guarded_staff():
+    return "welcome to staff", 200
+
+
 @pytest.fixture
 def client():
     with app.test_client() as client:
+        yield client
+
+
+@pytest.fixture
+def guarded_app_client():
+    with guarded_app.test_client() as client:
         yield client
 
 
@@ -338,9 +369,7 @@ def test_can_post_item_reply(user, client):
 
 
 def test_can_post_reply_with_override(client):
-    rv = client.post(
-        "/items", headers={"Authorization": "guest", "Override": "reply"}
-    )
+    rv = client.post("/items", headers={"Authorization": "guest", "Override": "reply"})
     assert rv.data == b"posted reply"
     assert rv.status_code == 200
 
@@ -359,8 +388,7 @@ def test_can_access_permissioned_endpoint(user, client):
 
 def test_can_access_permissioned_endpoint_with_override(client):
     rv = client.get(
-        "/use-permission",
-        headers={"Authorization": "user", "Override": "promote"},
+        "/use-permission", headers={"Authorization": "user", "Override": "promote"}
     )
     assert rv.status_code == 200
     assert rv.data == b"thumbs up"
@@ -387,9 +415,7 @@ def test_odd_permission(client):
     assert rv.status_code == 200
 
     # has one because of override, xor should be True
-    rv = client.get(
-        "/odd-perm", headers={"Authorization": "admin", "Override": "ban"}
-    )
+    rv = client.get("/odd-perm", headers={"Authorization": "admin", "Override": "ban"})
     assert rv.status_code == 200
 
 
@@ -420,9 +446,7 @@ def test_allows_user_to_access_blueprint(client):
 
 @pytest.mark.parametrize("user", ["guest", "user", "admin"])
 def test_override_works_with_permission_blueprint(user, client):
-    rv = client.get(
-        "/bp/", headers={"Authorization": user, "Override": "promote"}
-    )
+    rv = client.get("/bp/", headers={"Authorization": user, "Override": "promote"})
     assert rv.status_code == 200
     assert b"permissioned" in rv.data
 
@@ -452,7 +476,31 @@ def test_multi_tiered_guard_triggers_separately(client):
     assert b"hello" == rv.data
 
 
-def test_guard_blueprint_passes_view_args_to_on_fail(client):
+def test_guard_entire_passes_view_args_to_on_fail(client):
     rv = client.get("/args/foo/bar/")
     data = json.loads(rv.data.decode("utf-8"))
     assert data == {"foo": "foo", "bar": "bar"}
+
+
+@pytest.mark.parametrize("user", users.keys())
+def test_guarded_application_allows_everyone_to_index(guarded_app_client, user):
+    rv = guarded_app_client.get("/", headers={"Authorization": user})
+    assert rv.status_code == 200
+
+
+def test_guarded_application_allows_staff_into_protected_route(guarded_app_client):
+    rv = guarded_app_client.get("/staff", headers={"Authorization": "staff"})
+    assert rv.status_code == 200
+
+
+@pytest.mark.parametrize("user", set(users.keys()) - {"staff"})
+def test_guarded_application_denies_nonstaff_into_protected_route(
+    guarded_app_client, user
+):
+    rv = guarded_app_client.get("/staff", headers={"Authorization": user})
+    assert rv.status_code == 403
+
+
+def test_guard_entire_doesnt_explode_with_no_populated_endpoint(client):
+    rv = client.get("/totally/made/up", headers={"Authorization": "staff"})
+    assert rv.status_code == 404
