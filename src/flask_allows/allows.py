@@ -10,6 +10,8 @@ from werkzeug.local import LocalProxy
 from .additional import Additional, AdditionalManager
 from .overrides import Override, OverrideManager
 
+__all__ = ("Allows", "allows")
+
 
 class Allows(object):
     """
@@ -24,9 +26,7 @@ class Allows(object):
         authorization fails.
     """
 
-    def __init__(
-        self, app=None, identity_loader=None, throws=Forbidden, on_fail=None
-    ):
+    def __init__(self, app=None, identity_loader=None, throws=Forbidden, on_fail=None):
         self._identity_loader = identity_loader
         self.throws = throws
 
@@ -74,7 +74,6 @@ class Allows(object):
         throws = opts.get("throws")
 
         def decorator(f):
-
             @wraps(f)
             def allower(*args, **kwargs):
 
@@ -141,9 +140,7 @@ class Allows(object):
         identity = identity or self._identity_loader()
 
         if self.additional.current:
-            all_requirements = chain(
-                iter(self.additional.current), requirements
-            )
+            all_requirements = chain(iter(self.additional.current), requirements)
         else:
             all_requirements = iter(requirements)
 
@@ -152,9 +149,7 @@ class Allows(object):
                 r for r in all_requirements if r not in self.overrides.current
             )
 
-        return all(
-            _call_requirement(r, identity, request) for r in all_requirements
-        )
+        return all(_call_requirement(r, identity, request) for r in all_requirements)
 
     def clear_all_overrides(self):
         """
@@ -191,7 +186,7 @@ class Allows(object):
         throws=None,
         on_fail=None,
         f_args=(),
-        f_kwargs=ImmutableDict(),
+        f_kwargs=ImmutableDict(),  # noqa: B008
         use_on_fail_return=True,
     ):
         """
@@ -214,9 +209,7 @@ class Allows(object):
         """
 
         throws = throws or self.throws
-        on_fail = _make_callable(
-            on_fail
-        ) if on_fail is not None else self.on_fail
+        on_fail = _make_callable(on_fail) if on_fail is not None else self.on_fail
 
         if not self.fulfill(requirements, identity):
             result = on_fail(*f_args, **f_kwargs)

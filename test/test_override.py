@@ -1,4 +1,5 @@
 import pytest
+
 from flask_allows.overrides import (
     Override,
     OverrideManager,
@@ -17,7 +18,6 @@ def some_other_requirement(user):
 
 
 class AClassRequirement(Requirement):
-
     def __init__(self, the_value):
         self.the_value = the_value
 
@@ -28,13 +28,12 @@ class AClassRequirement(Requirement):
         return hash(self.the_value)
 
     def __eq__(self, other):
-        return isinstance(
-            other, AClassRequirement
-        ) and self.the_value == other.the_value
+        return (
+            isinstance(other, AClassRequirement) and self.the_value == other.the_value
+        )
 
 
 class TestCurrentOverrides(object):
-
     def test_current_overrides_with_no_context_returns_None(self):
         assert current_overrides == None  # noqa: E711
 
@@ -61,7 +60,6 @@ class TestCurrentOverrides(object):
 
 
 class TestOverride(object):
-
     def test_shows_if_requirement_is_overridden(self):
         override = Override(some_requirement)
         assert override.is_overridden(some_requirement)
@@ -105,7 +103,6 @@ class TestOverride(object):
 
 
 class TestOverrideManager(object):
-
     def test_override_manager_populates_overrides_local(self):
         manager = OverrideManager()
         override = Override(some_requirement)

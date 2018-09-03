@@ -8,6 +8,16 @@ from flask._compat import with_metaclass
 from .allows import _call_requirement
 from .overrides import current_overrides
 
+__all__ = (
+    "Requirement",
+    "ConditionalRequirement",
+    "wants_request",
+    "C",
+    "Or",
+    "And",
+    "Not",
+)
+
 
 class Requirement(with_metaclass(ABCMeta)):
     """
@@ -119,9 +129,7 @@ class ConditionalRequirement(Requirement):
 
         # can't use is because is a proxy
         if current_overrides != None:  # noqa: E711
-            requirements = (
-                r for r in requirements if r not in current_overrides
-            )
+            requirements = (r for r in requirements if r not in current_overrides)
 
         for r in requirements:
             result = _call_requirement(r, user, request)

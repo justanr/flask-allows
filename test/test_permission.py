@@ -1,6 +1,6 @@
+import pytest
 from werkzeug.exceptions import Forbidden
 
-import pytest
 from flask_allows import Allows, Permission
 
 

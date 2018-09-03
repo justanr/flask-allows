@@ -1,5 +1,7 @@
 from .allows import allows
 
+__all__ = ("Permission",)
+
 
 class Permission(object):
     """
@@ -29,11 +31,11 @@ class Permission(object):
         application context to use.
 
     :param requirements: The requirements to check against
-    :param throws: Optional, keyword only. Exception to throw when used as a context manager,
-        if provided it takes precedence over the exception stored on the current
-        application's registered :class:`~flask_allows.allows.Allows` instance
-    :param on_fail: Optional, keyword only. Value or function to use as the on_fail when used
-        as a context manager, if provided takes precedence over the on_fail
+    :param throws: Optional, keyword only. Exception to throw when used as a context
+        manager, if provided it takes precedence over the exception stored on the
+        current application's registered :class:`~flask_allows.allows.Allows` instance
+    :param on_fail: Optional, keyword only. Value or function to use as the on_fail when
+        used as a context manager, if provided takes precedence over the on_fail
         configured on current application's registered
         :class:`~flask_allows.allows.Allows` instance
     :param identity: Optional, keyword only. An identity to verify against

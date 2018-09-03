@@ -47,5 +47,5 @@ Utilities
 
 .. autofunction:: flask_allows.views.requires
 .. autofunction:: flask_allows.views.exempt_from_requirements
-.. autofunction:: flask_allows.views.guard_blueprint
+.. autofunction:: flask_allows.views.guard_entire
 .. autofunction:: flask_allows.requirements.wants_request

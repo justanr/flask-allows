@@ -145,23 +145,23 @@ To apply either of these decorators to class based views, there are two options:
             return render_template('some_tempalte.html')
 
 
-**************************
-Guarding entire blueprints
-**************************
+****************************************
+Guarding entire application or blueprint
+****************************************
 
 If you find yourself applying the same set of requirements to every route in
-a blueprint, you can instead guard an entire blueprint with that set of
-requirements instead using :func:`~flask_allows.views.guard_blueprint`::
+an applicationr or blueprint, you can instead guard all routes  with that set of
+requirements instead using :func:`~flask_allows.views.guard_entire`::
 
 
     from flask import Blueprint
-    from flask_allows import guard_blueprint
+    from flask_allows import guard_entire
 
     from myapp.requirements import is_admin
 
 
     admin_area = Blueprint(__name__, "admin_area")
-    admin_area.before_request(guard_blueprint([is_admin]))
+    admin_area.before_request(guard_entire([is_admin]))
 
 You may also specify what happens when the requirements aren't met by providing
 either of ``throws`` or ``on_fail``. If ``on_fails`` returns a non-None value,
@@ -176,7 +176,7 @@ that will be treated as the result of the routing request::
         return _
 
     admin_area.before_request(
-        guard_blueprint(
+        guard_entire(
             [is_admin],
             on_fail=flash_and_redirect(
                 message="Must be admin",
@@ -187,7 +187,7 @@ that will be treated as the result of the routing request::
     )
 
 
-``guard_blueprint`` will pass ``flask.request.view_args`` as keyword arguments
+``guard_entire`` will pass ``flask.request.view_args`` as keyword arguments
 to the ``on_fail`` handler registered with it, this is useful is the blueprint
 is registered with a dynamic component such as a username::
 
@@ -198,7 +198,7 @@ is registered with a dynamic component such as a username::
 
     user_area = Blueprint(__name__, "users")
     user_area.before_request(
-        guard_blueprint(
+        guard_entire(
             [MustBeLoggedIn()],
             on_fail=flash_formatted_message(
                 "Must be logged in to view {}'s profile",
@@ -221,6 +221,12 @@ permissions, that is possible as well by using
 .. danger::
 
     ``exempt_from_requirements`` only prevents ambient runners like
-    ``guard_blueprint`` from acting on the route handler. However, if
+    ``guard_entire`` from acting on the route handler. However, if
     ``requires``, ``allows.requires`` or another runner acts on the route
     then those requirements will be run.
+
+.. warning::
+
+    ``guard_entire`` will only run if there is not a routing exception,
+    such as a 404. This is to prevent unhandled exceptions from attempting
+    to matching against ``request.endpoint`` when it is not populated.
