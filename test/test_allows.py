@@ -11,14 +11,17 @@ def test_warns_about_request_deprecation_with_old_style_requirement(member):
     import warnings
 
     allows = Allows(identity_loader=lambda: member)
+    req = lambda u, p: True  # noqa: E731
+    repred = repr(req)
 
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always", DeprecationWarning)
-        allows.fulfill([lambda u, r: True])
+        allows.fulfill([req])
         warnings.simplefilter("default", DeprecationWarning)
 
     assert len(w) == 1
     assert issubclass(w[0].category, DeprecationWarning)
+    assert str(w[0].message).startswith(repred)
     assert "Passing request to requirements is now deprecated" in str(w[0].message)
 
 
