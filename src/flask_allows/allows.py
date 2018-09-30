@@ -10,6 +10,7 @@ from werkzeug.local import LocalProxy
 from .additional import Additional, AdditionalManager
 from .overrides import Override, OverrideManager
 
+
 __all__ = ("Allows", "allows")
 
 
@@ -237,8 +238,8 @@ def _call_requirement(req, user, request):
         return req(user)
     except TypeError:
         warnings.warn(
-            "Passing request to requirements is now deprecated"
-            " and will be removed in 1.0",
+            "{!r}: Passing request to requirements is now deprecated"
+            " and will be removed in 1.0".format(req),
             DeprecationWarning,
             stacklevel=2,
         )
