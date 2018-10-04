@@ -10,7 +10,7 @@ with open("CHANGELOG", "r") as f:
 if __name__ == "__main__":
     setup(
         name="flask-allows",
-        version="0.7.0",
+        version="0.7.1",
         author="Alec Nikolas Reiter",
         author_email="alecreiter@gmail.com",
         description="Impose authorization requirements on Flask routes",
