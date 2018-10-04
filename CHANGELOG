@@ -1,7 +1,13 @@
 Change Log
 ==========
 
-Version 0.7 (2018-XX-XX)
+Version 0.7.1 (2018-10-03)
+--------------------------
+
+* Added requirement name to deprecation message to make tracking down
+  user-only requirements warnings easier.
+
+Version 0.7 (2018-09-03)
 ------------------------
 
 * Added ``flask_allows.view.guard_entire`` and
