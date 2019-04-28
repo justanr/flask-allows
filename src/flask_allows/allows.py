@@ -10,7 +10,6 @@ from werkzeug.local import LocalProxy
 from .additional import Additional, AdditionalManager
 from .overrides import Override, OverrideManager
 
-
 __all__ = ("Allows", "allows")
 
 
@@ -150,7 +149,7 @@ class Allows(object):
                 r for r in all_requirements if r not in self.overrides.current
             )
 
-        return all(_call_requirement(r, identity, request) for r in all_requirements)
+        return all(_call_requirement(r, identity) for r in all_requirements)
 
     def clear_all_overrides(self):
         """
@@ -233,18 +232,18 @@ def _make_callable(func_or_value):
     return func_or_value
 
 
-def _call_requirement(req, user, request):
+def _call_requirement(requirement, user):
     try:
-        return req(user)
+        return requirement(user)
     except TypeError:
         warnings.warn(
             "{!r}: Passing request to requirements is now deprecated"
-            " and will be removed in 1.0".format(req),
+            " and will be removed in 1.0".format(requirement),
             DeprecationWarning,
             stacklevel=2,
         )
 
-        return req(user, request)
+        return requirement(user, request)
 
 
 allows = LocalProxy(__get_allows, name="flask-allows")
