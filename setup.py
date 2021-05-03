@@ -23,7 +23,7 @@ if __name__ == "__main__":
         zip_safe=False,
         url="https://github.com/justanr/flask-allows",
         keywords=["flask", "authorization", "permissions"],
-        project_links={
+        project_urls={
             "Code": "https://github.com/justanr/flask-allows",
             "Issue Tracker": "https://github.com/justanr/flask-allows/issues",
             "Documentation": "https://flask-allows.readthedocs.io/en/latest/",
