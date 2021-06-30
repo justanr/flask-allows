@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 from functools import wraps
 
 from flask import request
-from flask._compat import with_metaclass
+from six import with_metaclass
 
 from .allows import _call_requirement
 from .overrides import current_overrides
