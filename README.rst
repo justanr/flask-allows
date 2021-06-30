@@ -27,7 +27,7 @@ installable with::
 
     pip install flask-allows
 
-Flask Allows supports 2.7, and 3.4+. Support for 3.3 was ended in the version
+Flask Allows supports 3.8+.
 0.3 release.
 
 .. note::
