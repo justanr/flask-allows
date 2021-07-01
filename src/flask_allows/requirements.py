@@ -1,9 +1,10 @@
 import operator
 from abc import ABCMeta, abstractmethod
 from functools import wraps
+from inspect import isclass
+from types import FunctionType
 
 from flask import request
-from flask._compat import with_metaclass
 
 from .allows import _call_requirement
 from .overrides import current_overrides
@@ -19,7 +20,7 @@ __all__ = (
 )
 
 
-class Requirement(with_metaclass(ABCMeta)):
+class Requirement(metaclass=ABCMeta):
     """
     Base for object based Requirements in Flask-Allows. This is quite
     useful for requirements that have complex logic that is too much to fit
@@ -27,7 +28,7 @@ class Requirement(with_metaclass(ABCMeta)):
     """
 
     @abstractmethod
-    def fulfill(self, user, request=None):
+    def fulfill(self, user):
         """
         Abstract method called to verify the requirement against the current
         user and request.
@@ -40,8 +41,8 @@ class Requirement(with_metaclass(ABCMeta)):
         """
         return NotImplemented
 
-    def __call__(self, user, request):
-        return _call_requirement(self.fulfill, user, request)
+    def __call__(self, user):
+        return _call_requirement(self.fulfill, user)
 
     def __repr__(self):
         return "<{}()>".format(self.__class__.__name__)
@@ -122,7 +123,7 @@ class ConditionalRequirement(Requirement):
         """
         return cls(*requirements, negated=True)
 
-    def fulfill(self, user, request):
+    def fulfill(self, user):
         reduced = None
 
         requirements = self.requirements
@@ -132,7 +133,7 @@ class ConditionalRequirement(Requirement):
             requirements = (r for r in requirements if r not in current_overrides)
 
         for r in requirements:
-            result = _call_requirement(r, user, request)
+            result = _call_requirement(r, user)
 
             if reduced is None:
                 reduced = result
@@ -195,23 +196,48 @@ class ConditionalRequirement(Requirement):
 )
 
 
-def wants_request(f):
+def wants_request(f_or_cls):
     """
     Helper decorator for transitioning to user-only requirements, this aids
     in situations where the request may be marked optional and causes an
     incorrect flow into user-only requirements.
 
     This decorator causes the requirement to look like a user-only requirement
-    but passes the current request context internally to the requirement.
-
-    This decorator is intended only to assist during a transitionary phase
-    and will be removed in flask-allows 1.0
+    but passes the current request context internally to the requirement. It
+    can be applied to a function requirement or a subclass of Requirement.
 
     See: :issue:`20,27`
     """
 
+    if isclass(f_or_cls) and issubclass(f_or_cls, Requirement):
+        return _class_wants_request(f_or_cls)
+
+    if isinstance(f_or_cls, FunctionType):
+        return _func_wants_request(f_or_cls)
+
+    raise TypeError(
+        "Expected a function or subclass of Requirement. Got {}".format(f_or_cls)
+    )
+
+
+def _func_wants_request(f):
     @wraps(f)
     def wrapper(user):
         return f(user, request)
 
     return wrapper
+
+
+class _OldStyleRequirement(Requirement):
+    """
+    Used to provide an adaptation bridge to requirements that want the user
+    and request provided to fulfill rather than just user.
+    """
+
+    def __call__(self, user):
+        return self.fulfill(user, request)
+
+
+def _class_wants_request(cls):
+    name = cls.__name__
+    return type(name, (_OldStyleRequirement, cls), {})
