@@ -5,7 +5,6 @@ from inspect import isclass
 from types import FunctionType
 
 from flask import request
-from six import with_metaclass
 
 from .allows import _call_requirement
 from .overrides import current_overrides
@@ -21,7 +20,7 @@ __all__ = (
 )
 
 
-class Requirement(with_metaclass(ABCMeta)):
+class Requirement(metaclass=ABCMeta):
     """
     Base for object based Requirements in Flask-Allows. This is quite
     useful for requirements that have complex logic that is too much to fit
